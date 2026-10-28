@@ -1,0 +1,10 @@
+# Local (CPU-only) authoring and analysis. Nothing here needs a GPU.
+# The 31B model, vLLM, google-adk and swegemma live only on Kaggle, installed
+# there from the competition wheelhouse -- see notebooks/.
+pyyaml>=6.0
+pandas>=2.2
+numpy>=1.26
+scipy>=1.13
+matplotlib>=3.8
+pytest>=8.0
+kaggle>=1.6

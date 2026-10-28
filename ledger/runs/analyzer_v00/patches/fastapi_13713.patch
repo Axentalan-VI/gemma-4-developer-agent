@@ -1,0 +1,16 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 00000000..89453ca6
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,10 @@
++from fastapi import FastAPI
++import json
++
++try:
++    app = FastAPI()
++    print("FastAPI() worked")
++    schema = app.openapi()
++    print("openapi() worked")
++except Exception as e:
++    print(f"Error: {e}")

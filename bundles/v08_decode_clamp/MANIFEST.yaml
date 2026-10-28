@@ -1,0 +1,122 @@
+variant: v08_decode_clamp
+parent: v00_public_baseline
+
+hypothesis: >
+  Wall clock is the binding budget, per-step latency is set by decode alone, and
+  rumination is the part of decode that buys nothing. So clamping the thinking
+  budget should convert timeouts into completions, and resolution follows
+  completion.
+
+  MEASURED, P007 + T007, 120 task-runs over 60 paired fastapi tasks
+  (`ledger/runs/graph_v0{0,6}/`, `scripts/analyze_wall_clock.py`):
+
+    corr(completion tokens per step, seconds per step) = +0.968
+    corr(prompt     tokens per step, seconds per step) = -0.437
+
+    v00, timed out (n=22): 36 steps, 50.6 s/step, 712 completion tok/step
+    v00, completed (n=38): 95 steps, 16.5 s/step, 212 completion tok/step
+                           prompt tok/step 7,551 vs 8,691 -- essentially equal
+
+    resolved: 0.143 among tasks that finish, 0.050 overall
+    gold_hit: 0.41 on a timeout vs 0.71 on a completion
+
+  Two rival explanations were tested and killed before this bundle was built.
+  Context growth is not the driver -- prompt tokens are 97% of all tokens
+  processed and prefix caching is off, yet they correlate NEGATIVELY with latency,
+  because terse tasks get further and so accumulate more context. And our own
+  `concurrency: 12` is not starving tasks -- timed-out tasks ran at median
+  concurrency 9 against completed tasks' 11, the wrong direction.
+
+  Verbosity also does not buy quality. Binning tasks by completion tokens per
+  step, seconds per step rises 10.6 -> 58.4 while `gold_hit` falls 10/15 -> 7/15.
+
+topology: >
+  Identical to v00_public_baseline. Root `swe_coder` (6 tools) plus the read-only
+  `code_analyzer` AgentTool. Nothing about the agent graph changes.
+
+ships_eval_config: false
+
+changes:
+  - >
+    `configs/sampling.yaml`: `thinking_config.thinking_budget` 4096 -> 1024.
+    This is the ONLY change. `diff -r` against v00 reports one differing file,
+    and ignoring comments the diff is one line. Prompts, `agent.yaml`,
+    `sub_agents/code_analyzer.yaml`, temperature, top_p, top_k and
+    `max_output_tokens` are byte-identical to v00.
+
+expected_delta: >
+  Direction predicted, magnitude not. The timing half is mechanical: over 8,422
+  observed agent steps the per-step completion distribution is p50=40, p75=186,
+  p90=625, p95=1,199, p99=4,123, max=8,192, so a clamp at 1024 touches 6.1% of
+  steps and removes ~29.6% of total decode (upper bound). With decode and latency
+  correlated at +0.968, the primary endpoint should move.
+
+  PRIMARY ENDPOINT IS THE TIMEOUT RATE, NOT RESOLUTION. That is deliberate and it
+  is a power argument, not a preference. P007 detected a timeout difference of
+  17-vs-4 discordant at n=60 with McNemar p=0.0072, where `resolved` was flat at
+  3/60 in both arms with ZERO discordant pairs and `stats.decide` returned
+  UNDERPOWERED. At affordable k, the timeout rate is the only endpoint in this
+  project that has ever discriminated anything.
+
+  Pre-registered reading:
+    - timeout rate DOWN significantly, gold_hit flat or up -> the mechanism works;
+      this is the first bundle to move the binding constraint. Ship it.
+    - timeout rate DOWN, gold_hit DOWN by more -> clamping is not free. The
+      quality cost is real and the knob needs a larger value (2048 touches 2.5%
+      of steps and removes 14%).
+    - timeout rate FLAT -> `thinking_budget` is not what produced the long steps.
+      The remaining candidate is `max_output_tokens`, since steps were observed
+      at exactly 8,192, i.e. hitting the output cap rather than the thinking cap.
+      That would be a different bundle, not a retune of this one.
+
+measured:
+  clean_n: null
+  k: 0
+  leaderboard: null
+  evidence_from: >
+    Not measured as a bundle. Every motivating number is first-party, from P007's
+    120 rows and the 120 ATIF traces recovered with them: `ledger/runs/graph_v00`,
+    `ledger/runs/graph_v06`, and `scripts/analyze_wall_clock.py`. No number here
+    comes from a gold patch or from the leaderboard.
+
+risks:
+  - >
+    UNKNOWN WHETHER CLAMPING IS FREE, and this is the central risk rather than a
+    caveat. T007 establishes that verbosity does not HELP -- a cross-task
+    correlation -- not that reasoning can be cut without cost. A task where the
+    model ruminates may simply be a harder task, in which case the clamp removes
+    time from exactly the tasks that needed it. The run is designed to detect
+    that: `gold_hit` falling by more than the timeout rate improves is the
+    signature.
+  - >
+    `thinking_budget` may not be the binding cap. Steps were observed at exactly
+    8,192 completion tokens, which is `max_output_tokens`, not the 4,096 thinking
+    budget -- so some long steps are long in their VISIBLE output, which this
+    bundle does not touch. If the timeout rate comes back flat, that is the
+    reason, and it is pre-registered above rather than discovered afterwards.
+  - >
+    Thinking and visible tokens cannot be separated in the traces, because
+    `include_thoughts: false` means the text is absent while the token counts
+    still include it. So the ~29.6% decode-removal figure is an upper bound on
+    what clamping THINKING can achieve, not an estimate of it.
+  - >
+    v01 lowered `thinking_budget` 4096 -> 2048 and scored 0.08; v04 lowered
+    `max_output_tokens` and scored 0.10. Neither is evidence against this bundle
+    -- v01 bundled 11 simultaneous changes and v04 moved a ceiling with no
+    mechanism in mind, and NEITHER was ever measured locally. But both are a
+    warning that this knob has been touched before without benefit, and the only
+    thing new here is a measured mechanism and a target.
+  - >
+    Do not submit this bundle until the submission channel is known to work. As
+    of 2026-10-20 two consecutive submissions returned `COMPLETE` with a blank
+    score and a control is in flight (E015, ref 57430290). Shipping the
+    best-motivated bundle into a broken channel would waste it -- see
+    EXPERIMENTS.md "T008".
+
+notes: >
+  This is a deliberate single-knob experiment, which this project's CLAUDE.md
+  normally forbids on cost grounds. The exception is justified because the knob
+  is not prompt text and the mechanism is specific: grouping it with other
+  changes would make a flat result uninterpretable, and T007 licenses the timing
+  half while leaving the quality half genuinely open. That open question is the
+  whole experiment.

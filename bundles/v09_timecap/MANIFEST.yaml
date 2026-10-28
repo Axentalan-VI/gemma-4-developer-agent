@@ -1,0 +1,114 @@
+variant: v09_timecap
+parent: v00_public_baseline
+
+hypothesis: >
+  Submissions are not being mis-scored; they are running out of time. Capping
+  per-task wall clock below the grader's 60-minute default should let the
+  evaluation finish, which restores a scoring channel the project has not had
+  since 2026-10-07.
+
+  THE EVIDENCE IS A CONTROL, NOT AN INFERENCE. Three consecutive submissions
+  failed with "Notebook Timeout": v06 (57145400, 10-13), v07 (57390543, 10-19)
+  and `v00_public_baseline` resubmitted BYTE-IDENTICAL as a control (57430290,
+  10-20). The control is decisive: the same bytes scored 0.13 on 2026-09-30 and
+  now time out, so no property of any bundle explains it.
+
+  THE CAUSE IS DATED AND WAS MEASURED LOCALLY BEFORE IT WAS SEEN REMOTELY. The
+  competition wheelhouse was republished 2026-10-12 19:51:31. T005 measured a
+  2.3x slowdown on identical v00 bytes straddling exactly that boundary:
+
+    P005 `resolve60_v00` (10-12 13:42Z, wheelhouse 10-09)
+       median task wall 25.9 min, max 47.0, 0/12 reaching the 60-min cap
+    P006 `analyzer_v00`  (10-13 11:03Z, wheelhouse 10-12)
+       median task wall 60.4 min, max 60.5, 6/12 reaching the cap
+       summed task wall 287.7 -> 636.5 min
+
+  And the submission record splits on the same date:
+
+    2026-09-30  v00  0.13   |  2026-10-13  v06  Notebook Timeout
+    2026-10-06  v01  0.08   |  2026-10-19  v07  Notebook Timeout
+    2026-10-07  v04  0.10   |  2026-10-20  v00  Notebook Timeout (CONTROL)
+
+  Every submission before the republication scored. Every one after has timed
+  out. The wheelhouse arrives as `dataset_sources`, so no pin of ours freezes it
+  and this will not revert on its own.
+
+topology: >
+  Identical to v00_public_baseline. Root `swe_coder` (6 tools) plus the
+  read-only `code_analyzer` AgentTool. No prompt, tool, sampling or graph change.
+
+ships_eval_config: true          # the first bundle in this project ever to ship one
+
+changes:
+  - >
+    ADDS `eval_config.yaml` with `evaluation.max_time_minutes: 30`. That is the
+    only change. `diff -r` against v00 reports exactly one file present here and
+    absent there, and no differing file. `max_tool_calls` is deliberately
+    omitted so the grader's own 100 still applies.
+
+expected_delta: >
+  THIS BUNDLE IS NOT TRYING TO BEAT 0.13. It is trying to produce a score at
+  all. The project has had no leaderboard signal since 2026-10-07, and until a
+  submission completes, nothing can be measured remotely and every slot spent is
+  wasted.
+
+  Why 30 and not a round guess: pre-slowdown, v00's median task wall was 25.9
+  min with ZERO of 12 tasks reaching the 60-minute cap, and in that regime the
+  grader finished and scored us. 30 restores that per-task envelope with margin.
+
+  Pre-registered reading:
+    - SCORES AT ALL (any value) -> the timeout hypothesis is confirmed and the
+      channel is restored. Ship `v08_decode_clamp` + the same cap next, which
+      should score higher since v08 cuts the long-decode tail that makes tasks
+      hit the cap in the first place.
+    - scores NEAR 0.13 -> the cap costs little. Consider raising toward 40-45 to
+      recover the tasks that need longer.
+    - scores WELL BELOW 0.13 (say 0.05) -> the cap works but is expensive; the
+      30-60 minute tasks mattered. Combine with v08 rather than raising the cap,
+      because v08 makes tasks finish sooner instead of allowing them longer.
+    - TIMES OUT AGAIN -> per-task time is not the binding limit. The remaining
+      candidates are the total notebook budget including container setup (which
+      HARNESS_README 7.1 says is excluded from the AGENT budget but is not
+      excluded from notebook wall clock), or something outside our control.
+      Escalate rather than submitting a fourth variation.
+
+measured:
+  clean_n: null
+  k: 0
+  leaderboard: null
+  evidence_from: >
+    Not measured locally as a bundle, and deliberately so -- the thing it fixes
+    only manifests on the grader. Its justification is first-party: the control
+    submission 57430290, the submission record above, and T005's 2.3x slowdown
+    measurement from `ledger/runs/resolve60_v00` and `ledger/runs/analyzer_v00`.
+    The "Notebook Timeout" status itself is read from the Kaggle submissions UI;
+    the CSV API reports only `COMPLETE` with a blank `publicScore`, which is how
+    this was misdiagnosed for eight days.
+
+risks:
+  - >
+    THE CAP MAY BE TOO TIGHT OR TOO LOOSE AND WE CANNOT TELL IN ADVANCE. The
+    grader's total runtime limit is not documented anywhere in HARNESS_README,
+    and its evaluation concurrency is unknown, so 58 tasks x 30 minutes cannot be
+    converted into a total. 30 is anchored to a per-task figure that is known to
+    have worked, which is the best available anchor, not a derived bound.
+  - >
+    TRUNCATION COSTS RESOLUTION. Tasks needing 30-60 minutes are lost outright.
+    Accepted because a Notebook Timeout loses ALL 58.
+  - >
+    `eval_config.yaml` has never been shipped by this project -- all nine prior
+    bundles set `ships_eval_config: false`. If the grader rejects or mishandles
+    it, that is a new failure mode introduced by this bundle. It is paired with
+    v00's byte-identical bundle precisely so that this is the ONLY thing that
+    could be new.
+  - >
+    The build pipeline DELETES `eval_config.yaml` unless `--ship-eval-config` is
+    passed (`build.py:114`). A submission built without that flag silently ships
+    v00 instead, and would look like a null result rather than an error. Verify
+    the file is in the packaged zip before submitting.
+
+notes: >
+  This spends a submission slot on restoring the measurement channel rather than
+  on climbing, and it is paired with a known-scoring bundle so the result is
+  attributable. That is the same reasoning that made the 2026-10-20 control
+  decisive after three blanks had been explained away bundle-by-bundle.

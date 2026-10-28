@@ -1,0 +1,107 @@
+variant: v03_budget_guard
+parent: v02_context_budget
+hypothesis: >
+  v02's sampling ceilings, plus the first change in this project derived from
+  per-call behaviour rather than from outcomes. Mining the twelve probe_c12
+  traces (scripts/analyze_traces.py, 2026-10-06) showed that 259 of 491 tool
+  calls were made by the read-only code_analyzer sub-agent, and sub-agent calls
+  draw on the root agent's single budget. In 4 of 12 tasks the coder was left
+  with 1 to 4 calls. fastapi_11355 is the clean case: the coder made exactly one
+  call, invoking the analyzer, which then ran `grep -rn "get_type_hints" .`
+  verbatim 14 times in a row until all 30 calls were gone. The coder never read
+  a line of source. So the dominant failure -- half the tasks produced no patch
+  -- is starvation, not truncation. This bundle gives the analyzer the budget
+  discipline the coder already had, and tells the coder that the analyzer spends
+  its budget.
+topology: unchanged from v00 (root coder + read-only code_analyzer AgentTool)
+ships_eval_config: false
+
+expected_delta: >
+  Not guessed. The mechanism is established; its effect size is not. The
+  resolution correlation in probe_c12 is n=2 and is not treated as evidence:
+  fastapi_13537 had the highest coder share (25 of 31 calls) and resolved, but
+  fastapi_11194 resolved on 9 coder calls. What can be predicted is the
+  intermediate quantity, and that is what to measure first: the coder's share of
+  tool calls should rise from the observed 47% and the verbatim-re-issue rate
+  should fall from 235 of 491 calls. If those move and resolution does not, the
+  problem is downstream of localization.
+
+measured:
+  clean_n: null
+  k: 0
+  leaderboard: null
+  evidence_from: >
+    probe_c12, 12 fastapi tasks, L4x4, 2026-10-06, 0.79 GPU-h. Per-call trace
+    mining added the same day at 0 extra GPU-h. Note that probe_c12 ran at
+    30 calls / 10 min rather than the grader's 100 / 60, so the absolute
+    starvation is more severe there than it would be under the grader. The
+    *mechanism* -- one shared budget, an unbounded sub-agent -- is budget
+    independent; the severity is not.
+
+changes:
+  - id: analyzer-call-ceiling
+    why: >
+      prompts/analyzer.md had no budget section at all, while prompts/system.md
+      had a whole one. That asymmetry is the defect: the analyzer was never told
+      it had a limit, never told it shared a pool, and given no stop condition.
+      It now has a stated ceiling of 8 calls, an instruction to answer with
+      CONFIDENCE low on the 8th rather than keep searching, and the explicit
+      fact that the calls it spends are the engineer's.
+  - id: analyzer-no-repeat
+    why: >
+      MEASURED: 94 of the analyzer's 259 calls (36%) were byte-identical
+      re-issues. Stated as an absolute rule for both commands and file reads,
+      because the observed loop re-ran one grep 14 times.
+  - id: coder-no-repeat
+    why: >
+      MEASURED: fastapi_14258 issued 135 edit_file calls, an unbroken run of 82,
+      and 134 verbatim re-issues of one failing edit. v02 said only "if the same
+      tool call fails twice, change method", which permits the second attempt and
+      says nothing about a call that merely returns nothing useful. Now absolute,
+      with a two-strikes rule on the step as a whole.
+  - id: coder-knows-the-analyzer-costs-it
+    why: >
+      v02's budget section claimed "you have far more budget than this task
+      needs", which the traces refute: the analyzer can consume essentially all
+      of it before the coder reads anything. The coder is now told the analyzer
+      spends its 100, to call it at most once, and never to re-run it to check
+      something.
+  - id: get-status-is-free
+    why: >
+      HARNESS_README section 6: get_status and submit_patch are
+      @budget_gated(count_tool_call=False), so they cost nothing, and get_status
+      returns live budget consumption. Across all twelve traces get_status was
+      called **twice in total**. A free instrument that reports exactly the
+      resource being wasted was going unused; the prompt now says it is free in
+      both places it is mentioned.
+
+risks:
+  - >
+    THE CENTRAL RISK, and it is evidenced rather than hypothetical. Every change
+    here is an instruction, and the traces show instructions bind weakly on this
+    model once it is looping. The harness injects a `budget_warning` field into
+    every tool response once 10 calls remain; in fastapi_11355 the analyzer
+    received that warning **eleven consecutive times** and re-issued the same
+    grep on every one of them. So an in-band, machine-generated, unmissable
+    warning changed nothing. A system-instruction rule stated up front is not
+    the same intervention as a mid-loop warning, but nobody should expect this
+    bundle to fully fix the loop. Measure the re-issue rate, not just the score.
+  - >
+    A hard per-sub-agent cap is NOT expressible in this competition's
+    declarative format. eval_config.yaml's budgets (max_tool_calls, max_turns,
+    max_time_minutes, timeout_seconds) are session-global, LoopAgent's
+    max_iterations does not apply to an AgentTool, and submissions may ship no
+    Python. The only enforced lever is the sub-agent's `tools` list -- removing
+    run_command would make the observed grep loop structurally impossible, at
+    the cost of the analyzer's only text-search capability. That option is
+    deliberately NOT taken here, and is the obvious next variant if this one
+    fails to move the re-issue rate.
+  - >
+    Inherits v01's and v02's standing risk: this is a longer prompt than v00, and
+    the one community A/B suggests short and generic beats long and rule-laden.
+    The analyzer prompt grew by ~20 lines.
+  - >
+    The 8-call ceiling is a guess at the right number. probe_c12's analyzer
+    answers that were useful took 3 to 5 calls, so 8 leaves headroom, but it was
+    chosen against a 30-call total budget. Under the grader's 100, a more
+    generous analyzer ceiling may be correct, and nothing here has tested that.

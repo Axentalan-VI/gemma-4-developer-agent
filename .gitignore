@@ -1,0 +1,40 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Build outputs are reproducible from bundles/ -- bundle_hash proves it.
+dist/
+
+# Run artifacts sync from the Kaggle datasets, not from git. Summaries are
+# small and worth versioning; traces and test logs are not.
+ledger/runs/*/traces/
+ledger/runs/*/test_outputs/
+ledger/incoming/
+
+# Snapshots, graphs and embeddings are tens of GB and already mounted on Kaggle.
+data/snapshots/
+data/graphs/
+data/embeddings/
+
+# Everything under reference/ is competition-provided: the official starter
+# notebook, the sample submission, and 79 harness source files copied out of
+# the Kaggle image. Keeping it on disk stops every follow-up question costing
+# another Kaggle session; committing it would redistribute the organisers'
+# code, which this repo cannot do once it is public.
+reference/
+
+# The task set itself, with its ground-truth patches. Same reason.
+data/tasks/tasks.jsonl
+
+kaggle.json
+
+# Vendored wheels: 6.5 MB of binaries, reproducible from vendor/test_deps.lock
+vendor/test_deps/*.whl
+
+# Pulled run output; the ledger is the versioned record.
+results/
+
+# Editor-local state: machine-specific paths, not project config
+.vscode/

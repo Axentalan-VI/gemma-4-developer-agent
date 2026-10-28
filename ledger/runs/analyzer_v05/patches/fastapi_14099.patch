@@ -1,0 +1,65 @@
+diff --git a/fastapi/routing.py b/fastapi/routing.py
+index f620ced5..8db556e4 100644
+--- a/fastapi/routing.py
++++ b/fastapi/routing.py
+@@ -845,8 +845,6 @@ class APIRouter(routing.Router):
+             routes=routes,
+             redirect_slashes=redirect_slashes,
+             default=default,
+-            on_startup=on_startup,
+-            on_shutdown=on_shutdown,
+             lifespan=lifespan,
+         )
+         if prefix:
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 00000000..d27b7a15
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,46 @@
++
++import asyncio
++from fastapi import FastAPI, Depends, Request
++from fastapi.responses import StreamingResponse
++from contextlib import asynccontextmanager
++
++app = FastAPI()
++
++dependency_closed = False
++
++async def get_db():
++    global dependency_closed
++    print("Dependency started")
++    try:
++        yield "db_connection"
++    finally:
++        print("Dependency closed")
++        dependency_closed = True
++
++async def stream_generator():
++    print("Streaming started")
++    for i in range(3):
++        await asyncio.sleep(0.1)
++        print(f"Streaming chunk {i}")
++        yield f"chunk {i}\n"
++    print("Streaming finished")
++
++@app.get("/")
++async def root(db=Depends(get_db)):
++    return StreamingResponse(stream_generator())
++
++if __name__ == "__main__":
++    import uvicorn
++    from fastapi.testclient import TestClient
++    from httpx import AsyncClient
++
++    async def test_streaming():
++        global dependency_closed
++        async with AsyncClient(app=app, base_url="http://test") as ac:
++            print("Requesting /")
++            response = await ac.get("/")
++            async for chunk in response.aiter_bytes():
++                print(f"Received: {chunk}")
++            print(f"Dependency closed after streaming: {dependency_closed}")
++
++    asyncio.run(test_streaming())

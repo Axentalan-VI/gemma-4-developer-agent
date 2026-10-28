@@ -1,0 +1,243 @@
+variant: v05_no_analyzer
+parent: v04_lean
+
+#: ============================================================================
+#: RETIRED 2026-10-13 by P006. Do not submit, do not tune, do not re-measure.
+#:
+#: The bundle does exactly what it was built to do and it does not help.
+#: Paired, same session, 12 tasks (EXPERIMENTS.md P006):
+#:
+#:   coder_call_share  0.543 -> 1.000   (+0.457, z=+6.02)  intervention works
+#:   code_analyzer calls                 0 of 1509         sub-agent gone
+#:   first charged edit  ~call 20 -> ~call 6                starvation removed
+#:   gold_hit          5/12  -> 5/12     (net 0, McNemar p=1.00)  NO EFFECT
+#:   resolved          0/12  -> 0/12                              NO EFFECT
+#:   reissue_rate      0.224 -> 0.374   (+0.151, z=+1.87)  PATHOLOGY RELOCATED
+#:
+#: So the -0.90 correlation behind it was a symptom of task difficulty, not a
+#: cause of failure, and `risks` below called the relocation correctly: the
+#: coder absorbed the freed budget with its own repetition, adding two loops
+#: v00 never showed (174 submit_patch calls in one task, 136 malformed
+#: edit_file in another).
+#:
+#: Kept in the repo as evidence, not as a candidate. The detectable delta was
+#: 0.209 and the hypothesis predicted +0.25 to +0.42, so this is a real null
+#: against its own prediction rather than a failure to measure.
+#: ============================================================================
+#: ----------------------------------------------------------------------------
+#: UNRETIRED FOR ONE SUBMISSION, 2026-10-14, by the user's explicit decision.
+#:
+#: The retirement above stands as a LOCAL verdict and is not withdrawn. What it
+#: does not cover is the private repo mix: all 12 tasks in P006 were fastapi,
+#: and the private 58 are believed to be different repos. So "retired locally,
+#: submitted once" is the honest state, not a reversal.
+#:
+#: Why this slot: v06 was still PENDING 21 h after submission, and v07 cannot be
+#: read until it scores because v07's `fixer` carries v06's graph tools. v05 is
+#: the only built bundle that is BOTH unconfounded with v06 and a single clean
+#: lever against an already-scored parent -- its sampling config is
+#: byte-identical to v04_lean's (verified by diff, 2026-10-14), so v05 vs v04
+#: isolates exactly one change: the removal of the code_analyzer AgentTool.
+#:
+#: PRE-REGISTERED READING, fixed BEFORE submitting. Parent v04_lean = 0.10 =
+#: 6/58 tasks. One task = 0.0172; the project's 0.06 evidence threshold is ~3.5
+#: tasks. Therefore, against v04:
+#:
+#:     <=2 tasks (<=0.03)    v05 HURTS -- retire permanently, do not revisit
+#:     3-9 tasks (0.05-0.15) NULL BAND -- no information; the local verdict stands
+#:     >=10 tasks (>=0.17)   v05 HELPS on a non-fastapi mix -- the local null was
+#:                           repo-specific, and a flat topology becomes the base
+#:                           for the next bundle instead of v00
+#:
+#: Do NOT read this against v00's 8 tasks as if it were clean: v05 inherits
+#: v04's sampling ceilings, so a v00 comparison mixes two changes.
+#: ----------------------------------------------------------------------------
+submitted_once: 2026-10-14
+submitted_despite_retirement_because: >
+  Private repo mix is untested and the slot was otherwise going to go unused for
+  a seventh day. Decision made by the user, 2026-10-14; reading pre-registered
+  above before the submission was sent.
+retired: 2026-10-13
+retired_by: P006
+retired_because: >
+  Mechanism confirmed, outcome unmoved, and the waste it removed reappeared in
+  the root agent. See EXPERIMENTS.md "P006 RESULT".
+
+hypothesis: >
+  Remove the `code_analyzer` AgentTool entirely. It is the measured budget sink,
+  and the only lever the harness actually enforces on a sub-agent is its
+  existence and its `tools` list.
+
+  MEASURED, P002 v00 arm, 12 tasks, 1040 tool calls
+  (`scripts/analyze_traces.py --traces results/eval_v9/.../paired100_v00/traces`):
+
+    calls by author:  code_analyzer 657 (63%)   swe_coder 383 (37%)
+    code_analyzer invocations: 19
+
+  Nineteen invocations consumed 657 tool calls -- about 35 calls per invocation,
+  against a per-task budget of 100 that is shared with the root agent. The
+  analyzer is not a cheap consultation; it is where the task's budget goes. Three
+  of twelve tasks never reached `submit_patch` at all.
+
+  This bundle is the single-item ablation of that sink: v04_lean with the
+  `agent_tool` block deleted and the one prompt bullet that referenced it
+  removed. Everything else is byte-identical to v04, whose prompts are in turn
+  byte-identical to v00's.
+topology: >
+  Root coder only (6 tools). No sub-agents. This is a deliberate topology change
+  and the first bundle in the project to ship one.
+ships_eval_config: false
+
+changes:
+  - id: remove-code-analyzer-agenttool
+    why: >
+      THE ONLY FUNCTIONAL CHANGE. Deletes the `agent_tool` entry from the root
+      `tools` list, and with it `sub_agents/code_analyzer.yaml`,
+      `prompts/analyzer.md` and `configs/sampling_analyzer.yaml`.
+
+      The root agent's 100-call budget is one shared context per task, so a
+      sub-agent's calls are the root's calls. Removing the sub-agent returns the
+      63% it was spending to the agent that can actually call `edit_file` and
+      `submit_patch`.
+
+  - id: drop-analyzer-prompt-bullet
+    why: >
+      `prompts/system.md` step 2 said "Call the `code_analyzer` tool with the full
+      issue text first." With no such tool, that is a dangling instruction toward
+      a tool that does not exist, which is exactly the shape of thing that makes a
+      model burn turns. Removed as a one-line deletion; `diff` against v00's
+      prompt shows exactly that one line and nothing else.
+
+      Nothing else in the prompt needed changing, and this is the load-bearing
+      point of the whole bundle: the NEXT bullet already instructs the coder to
+      "extract every identifier, error message and file name from the issue and
+      search for them: grep -rn ...". The coder retains `run_command`. So the
+      agent's text-search capability is unchanged -- only the sub-agent that was
+      looping with it is gone.
+
+rejected_alternative:
+  id: remove-run_command-from-analyzer
+  why_rejected: >
+    This was the planned v05 in HANDOFF.md: keep the analyzer, strip its
+    `run_command`, so "the observed grep loop becomes structurally impossible".
+    Rejected on two pieces of evidence gathered before building.
+
+    1. THE LOOP IS NOT SPECIFIC TO run_command. In the same 12 v00 traces, three
+       tasks loop on `read_file` rather than `run_command`: fastapi_14262 repeats
+       it 75x (85 read_file calls, 78 re-issues), fastapi_13713 26x, fastapi_13207
+       14x. The pathology is "loop on whatever tool is in hand", so removing one
+       tool displaces the loop rather than ending it. The analyzer would keep
+       `read_file` and three graph tools to loop on.
+
+    2. IT WOULD LEAVE THE ANALYZER CLOSE TO BLIND, and HANDOFF.md flagged this as
+       the open question. It is worse than it looks there, because
+       `search_similar_code` is NOT a free-text search: HARNESS_README.md:497
+       states the sandbox has no live embedding server, so `embed(query)` resolves
+       the query against node keys/suffixes and the caller must already pass a
+       class, function or module symbol name. And the graph tools carry
+       CALLS-edges only, missing async functions entirely -- which matters
+       because clean-N is fastapi 60 of 102. An analyzer with no `run_command`
+       could not search for an error message quoted in an issue.
+
+    Removing the AgentTool instead resolves that objection rather than accepting
+    it: the capability moves to the coder, which already had it, instead of being
+    deleted.
+
+expected_delta: >
+  Honestly uncertain in SIGN, and that is the point of running it.
+
+  The case for positive: the agent gets ~2.6x more usable budget for the work
+  that produces a patch, and 3 of 12 tasks in P002 never reached `submit_patch`
+  at all. A task that produces no patch cannot resolve, so recovering budget
+  attacks the largest observed failure mode directly.
+
+  The case for negative: the analyzer is part of the topology that scored 0.13,
+  and v00's gold-file hit rate was 6/12. If those 657 calls were buying
+  localization, this bundle removes it and localization should fall. That is
+  precisely why gold-file hit is the metric to read here, not resolution.
+
+  Magnitude: this is a far larger mechanical change than any bundle so far, so
+  unlike v01-v04 it is at least capable of moving more than the leaderboard's
+  0.06 noise band. A null result from THIS bundle would be informative, where a
+  null from v04 was not.
+
+bundle_hash: 5f47540cdfb9bf01d6ef34d013f2f31c4c3083abe67a9d7e9063f3d284e9dbf4
+
+measured:
+  clean_n: null
+  k: 0
+  leaderboard: null
+  evidence_from: >
+    Not yet measured. The P002 trace analysis above motivates it but does not
+    test it. Do NOT submit this on the strength of the hypothesis: per
+    HANDOFF.md step 5, submissions are held until a local run clears the ship
+    rule in stats.py -- and per step 3 the rig must first be shown to resolve
+    anything at all (run `resolve60`, launched 2026-10-12).
+
+risks:
+  - >
+    THE CEILING ON THIS BUNDLE'S UPSIDE, and it was missed when this bundle was
+    first written. The 63%-of-budget figure says the analyzer is WASTEFUL. It
+    does not say waste is why tasks FAIL, and the same trace set bounds how much
+    it could possibly explain: 3 of 12 tasks never called `submit_patch`, which
+    means **9 of 12 produced a patch and still resolved nothing**. So budget
+    exhaustion accounts for at most a quarter of observed failures, and the other
+    three-quarters are patch quality, which this bundle does not touch at all.
+
+    REVISED 2026-10-12 after P005 (EXPERIMENTS.md T002), and the ceiling moves
+    up while the warning stands. On a full 100-call budget the no-patch class is
+    **5 of 12, not 3**, and all 5 show this bundle's exact mechanism: the
+    sub-agent took 90-98% of the charged calls, and in 4 of the 5 the agent
+    **never called `write_file` or `edit_file` once** (the fifth tried once after
+    exhaustion and was refused). Across all 12 tasks, Spearman(sub-agent share,
+    outcome quality) = **-0.90**. So the honest ceiling is ~40% of failures, not
+    a quarter -- but it is still a ceiling, 7 of 12 remained unresolvable on
+    patch quality alone, and the gradient is observational: heavy analyzer use
+    could be a symptom of a hard task rather than its cause.
+
+    Stated plainly because the number is seductive: recovering 657 tool calls
+    for a coder that already had enough calls to submit, and still failed, is
+    optimising the variable that was cheapest to measure rather than the one that
+    moves the metric. The honest expected ceiling is ~+0.03 (3 tasks of 12 scaled
+    to a ~60-task private set is ~0.05, and not all of those convert), which is
+    inside the leaderboard's noise band.
+  - >
+    THE MECHANISM MAY RELOCATE RATHER THAN DISAPPEAR -- and this is this bundle's
+    own argument turned against it. `rejected_alternative` rejects stripping
+    `run_command` because "the loop is not specific to run_command" and would
+    migrate to `read_file`. If loops migrate between TOOLS, they can migrate
+    between AGENTS. The root coder retains `run_command` and a prompt that
+    explicitly tells it to grep, so nothing structurally prevents it from
+    reproducing the analyzer's loop in its own context.
+
+    What the evidence does and does not cover: the measured 63%/19-invocation
+    split is real, and removing the sub-agent certainly removes THAT consumer.
+    Whether total waste falls is NOT established. Therefore the quantity to read
+    on this bundle is not resolution and not even gold_hit alone, but the
+    **re-issue rate and calls-by-author** from `scripts/analyze_traces.py`: if
+    the coder's own re-issue rate rises to absorb the freed budget, the bundle
+    has moved the problem and should be retired rather than tuned.
+  - >
+    THE PRIMARY RISK: this deletes the project's planned paper centrepiece. PLAN.md
+    E6 bets on an orchestrator + specialist topology, and this bundle goes the
+    opposite way, to a single flat agent. If it wins, E6 is dead and the paper's
+    architecture section goes with it. That is an acceptable outcome -- the paper
+    chosen this session is about measurement, not architecture (paper/OUTLINE.md
+    section 7) -- but it should be a decision, not a surprise.
+  - >
+    The expected direction is unknown, so this bundle can lose outright. It must
+    be measured locally on a rig that resolves before it is ever submitted. One
+    submission per day is the scarce resource, not the bundle.
+  - >
+    Removing the sub-agent also removes the context-isolation benefit it provided:
+    the analyzer's search output died with its own context instead of entering the
+    coder's. With one flat context, grep spew now lands in the coder's 32,768-token
+    window, and ADK compacts at 14,336. So this bundle may trade budget exhaustion
+    for context exhaustion. The counter-evidence is that P002's context-window
+    deaths were all inside `agent_tool.py`, i.e. in the sub-agent being removed --
+    but that is an argument about where the deaths happened, not proof they will
+    not reappear in the coder. Read `context_window_deaths` alongside the rest.
+  - >
+    Single-item ablation against v04_lean, whose own leaderboard reading (0.10)
+    did not discriminate anything. The clean comparison is therefore LOCAL and
+    paired against v00, not a leaderboard delta against v04.

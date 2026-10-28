@@ -1,0 +1,234 @@
+diff --git a/fastapi/dependencies/utils.py b/fastapi/dependencies/utils.py
+index d43fa8a5..9f554e7d 100644
+--- a/fastapi/dependencies/utils.py
++++ b/fastapi/dependencies/utils.py
+@@ -871,6 +871,7 @@ async def _extract_form_body(
+     received_body: FormData,
+ ) -> Dict[str, Any]:
+     values = {}
++    processed_keys = set()
+ 
+     for field in body_fields:
+         value = _get_multidict_value(field, received_body)
+@@ -902,8 +903,9 @@ async def _extract_form_body(
+             value = serialize_sequence_value(field=field, value=results)
+         if value is not None:
+             values[field.alias] = value
++        processed_keys.add(field.alias)
+     for key, value in received_body.items():
+-        if key not in values:
++        if key not in processed_keys:
+             values[key] = value
+     return values
+ 
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 00000000..7fe43f83
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,27 @@
++from fastapi import FastAPI, Form
++from fastapi.testclient import TestClient
++from typing import Optional
++
++app = FastAPI()
++
++@app.post("/test")
++async def test_endpoint(q: Optional[str] = Form(None)):
++    return {"q": q}
++
++client = TestClient(app)
++
++def test_empty_string_form_value():
++    # When q is sent as an empty string, it should be None because the default is None
++    # and _get_multidict_value returns the default for empty strings in Form fields.
++    response = client.post("/test", data={"q": ""})
++    print(f"Response: {response.json()}")
++    assert response.json() == {"q": None}
++
++if __name__ == "__main__":
++    try:
++        test_empty_string_form_value()
++        print("Test passed!")
++    except AssertionError as e:
++        print(f"Test failed: {e}")
++        import sys
++        sys.exit(1)
+diff --git a/repro_direct.py b/repro_direct.py
+new file mode 100644
+index 00000000..f2a36a04
+--- /dev/null
++++ b/repro_direct.py
+@@ -0,0 +1,73 @@
++import asyncio
++from typing import List, Dict, Any, Mapping, Union
++from unittest.mock import MagicMock
++
++# Mocking the necessary parts of fastapi and pydantic
++class MockFieldInfo:
++    def __init__(self, default=None, required=False):
++        self.default = default
++        self.required = required
++
++class MockModelField:
++    def __init__(self, name, alias, default=None, required=False, field_info=None, type_=None):
++        self.name = name
++        self.alias = alias
++        self.default = default
++        self.required = required
++        self.field_info = field_info
++        self.type_ = type_
++
++# We need to mock the imports used in fastapi.dependencies.utils
++import fastapi.params as params
++import fastapi.dependencies.utils as utils
++
++# Create a mock for params.Form
++class MockForm(params.Form):
++    pass
++
++async def test_extract_form_body_regression():
++    # Setup
++    field_name = "q"
++    field_alias = "q"
++    default_value = None
++    required = False
++    
++    # Create a field that mimics a FastAPI Form field
++    field_info = MockForm(default=default_value, required=required)
++    field = MockModelField(name=field_name, alias=field_alias, default=default_value, required=required, field_info=field_info, type_=str)
++    
++    body_fields = [field]
++    
++    # received_body is like a MultiDict. We can use a simple dict for this test if _get_multidict_value handles it.
++    # In starlette, FormData is a MultiDict.
++    from starlette.datastructures import FormData
++    received_body = FormData({"q": ""})
++    
++    # Execute
++    result = await utils._extract_form_body(body_fields, received_body)
++    
++    print(f"Result: {result}")
++    
++    # Expected: Since q is "", and default is None, and it's a Form field, 
++    # _get_multidict_value should return None.
++    # Then _extract_form_body should NOT overwrite it with "" from received_body.
++    # So result should be {'q': None} or {} depending on how it's handled.
++    
++    # If the bug is present, result will be {'q': ''}
++    # If fixed, result should be {'q': None} or {}
++    
++    # Let's check if it's ''
++    if result.get("q") == "":
++        print("Bug reproduced: result['q'] is ''")
++        return False
++    else:
++        print("Bug not reproduced or already fixed: result['q'] is", result.get("q"))
++        return True
++
++if __name__ == "__main__":
++    if not asyncio.run(test_extract_form_body_regression()):
++        import sys
++        sys.exit(1)
++    else:
++        print("Test passed!")
++        sys.exit(0)
+diff --git a/repro_utils.py b/repro_utils.py
+new file mode 100644
+index 00000000..a853516a
+--- /dev/null
++++ b/repro_utils.py
+@@ -0,0 +1,93 @@
++from fastapi.dependencies.utils import _extract_form_body, _get_multidict_value
++from fastapi._compat import ModelField
++from starlette.datastructures import FormData
++from pydantic import FieldInfo
++from fastapi import params
++from typing import Any, List, Optional
++from copy import deepcopy
++
++# Mocking ModelField and FieldInfo for the test
++class MockFieldInfo(FieldInfo):
++    def __init__(self, default=None, required=False, alias=None):
++        super().__init__(default=default)
++        self.required = required
++        self.alias = alias or None
++
++def test_get_multidict_value():
++    # Case 1: Field is required and value is missing
++    field = ModelField(
++        name="q",
++        type_=str,
++        field_info=MockFieldInfo(required=True),
++        alias="q"
++    )
++    values = {}
++    assert _get_multidict_value(field, values) is None # Should return None if required but missing? 
++    # Wait, looking at _get_multidict_value:
++    # if value is None ...: if field.required: return (which is None)
++
++    # Case 2: Field is optional, value is missing -> should return default
++    field = ModelField(
++        name="q",
++        type_=str,
++        field_info=MockFieldInfo(default="default_val", required=False),
++        alias="q"
++    )
++    values = {}
++    assert _get_multidict_value(field, values) == "default_val"
++
++    # Case 3: Field is optional, value is empty string -> should return default (None)
++    field = ModelField(
++        name="q",
++        type_=str,
++        field_info=MockFieldInfo(default=None, required=False),
++        alias="q"
++    )
++    # We need to make sure field_info is an instance of params.Form
++    # Let's use actual params.Form
++    from fastapi import params
++    field.field_info = params.Form(default=None)
++    field.required = False
++    
++    values = {"q": ""}
++    assert _get_multidict_value(field, values) is None
++
++def test_extract_form_body():
++    # This is where the bug is.
++    # _extract_form_body iterates over body_fields, calls _get_multidict_value.
++    # If the result is not None, it adds it to values.
++    # Then it iterates over received_body.items() and adds missing keys.
++    
++    from fastapi import params
++    field = ModelField(
++        name="q",
++        type_=str,
++        field_info=params.Form(default=None),
++        alias="q"
++    )
++    field.required = False
++    
++    body_fields = [field]
++    received_body = FormData({"q": ""})
++    
++    # Current behavior:
++    # 1. _get_multidict_value(field, received_body) returns None because value is "" and default is None.
++    # 2. value is None, so it's NOT added to values.
++    # 3. Then it iterates over received_body.items(): "q" is not in values, so values["q"] = "".
++    # 4. Result is {"q": ""}, but it should have been {"q": None} or just not present if we want it to be None.
++    
++    import asyncio
++    result = asyncio.run(_extract_form_body(body_fields, received_body))
++    print(f"Result: {result}")
++    assert result.get("q") is None or "q" not in result
++
++if __name__ == "__main__":
++    try:
++        test_get_multidict_value()
++        print("test_get_multidict_value passed!")
++        test_extract_form_body()
++        print("test_extract_form_body passed!")
++    except Exception as e:
++        print(f"Error: {e}")
++        import traceback
++        traceback.print_exc()

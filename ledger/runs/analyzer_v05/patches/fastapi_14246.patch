@@ -1,0 +1,54 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 00000000..dd15fdfa
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,48 @@
++from fastapi import FastAPI
++from pydantic import BaseModel
++from fastapi.testclient import TestClient
++import json
++
++class Child(BaseModel):
++    name: str
++
++class Parent(BaseModel):
++    child: Child
++
++app = FastAPI()
++
++@app.post("/parent/")
++def create_parent(parent: Parent):
++    return parent
++
++client = TestClient(app)
++
++def test_openapi_schema():
++    response = client.get("/openapi.json")
++    openapi_json = response.json()
++    
++    schemas = openapi_json.get("components", {}).get("schemas", {})
++    
++    print(f"Schemas found: {list(schemas.keys())}")
++    
++    assert "Parent" in schemas, "Parent schema missing"
++    assert "Child" in schemas, "Child schema missing"
++    
++    parent_schema = schemas["Parent"]
++    # Check if Parent refers to Child via $ref instead of inlining it
++    properties = parent_schema.get("properties", {})
++    child_prop = properties.get("child", {})
++    
++    print(f"Child property in Parent: {child_prop}")
++    
++    assert "$ref" in child_prop, f"Child schema was inlined in Parent: {child_prop}"
++    assert child_prop["$ref"] == "#/components/schemas/Child"
++
++if __name__ == "__main__":
++    try:
++        test_openapi_schema()
++        print("Success: Schemas are separated!")
++    except AssertionError as e:
++        print(f"Failure: {e}")
++    except Exception as e:
++        print(f"An error occurred: {e}")

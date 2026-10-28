@@ -1,0 +1,73 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 00000000..e164381e
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,37 @@
++
++from fastapi import FastAPI, Body
++from pydantic import BaseModel, Field, Discriminator
++from typing import Literal, Union, Annotated
++from fastapi.testclient import TestClient
++
++app = FastAPI()
++
++class Cat(BaseModel):
++    pet_type: Literal["cat"]
++    meow: bool
++
++class Dog(BaseModel):
++    pet_type: Literal["dog"]
++    bark: bool
++
++Pet = Annotated[Union[Cat, Dog], Discriminator("pet_type")]
++
++@app.post("/pet")
++async def create_pet(pet: Pet):
++    return pet
++
++def test_pet_param():
++    client = TestClient(app)
++    # If it's a body parameter, this should work:
++    response = client.post("/pet", json={"pet_type": "cat", "meow": True})
++    print(f"Response: {response.status_code}, {response.json()}")
++    assert response.status_code == 200
++
++if __name__ == "__main__":
++    try:
++        test_pet_param()
++        print("Success!")
++    except Exception as e:
++        print(f"Error: {e}")
++        import traceback
++        traceback.print_exc()
+diff --git a/simple_repro.py b/simple_repro.py
+new file mode 100644
+index 00000000..1226027e
+--- /dev/null
++++ b/simple_repro.py
+@@ -0,0 +1,24 @@
++from fastapi import FastAPI
++from fastapi.testclient import TestClient
++
++app = FastAPI()
++
++@app.get("/")
++async def root():
++    return {"message": "Hello World"}
++
++client = TestClient(app)
++
++def test_root():
++    response = client.get("/")
++    assert response.status_code == 200
++    assert response.json() == {"message": "Hello World"}
++
++if __name__ == "__main__":
++    try:
++        test_root()
++        print("Test passed!")
++    except Exception as e:
++        print(f"Test failed: {e}")
++        import traceback
++        traceback.print_exc()

@@ -1,0 +1,11 @@
+# thinking_budget cut from 4096 to 2048 and max_output_tokens raised from 8192
+# to 12288. In the public bundle a long thought block followed by a large edit
+# can hit the output cap mid-tool-call, leaving an unclosed tag and burning the
+# turn. More room for the call, less room to ruminate.
+temperature: 0.2
+top_p: 0.95
+top_k: 40
+max_output_tokens: 12288
+thinking_config:
+  thinking_budget: 2048
+  include_thoughts: false

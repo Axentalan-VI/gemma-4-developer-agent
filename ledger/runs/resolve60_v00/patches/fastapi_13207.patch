@@ -1,0 +1,27 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 00000000..843875e8
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,21 @@
++from fastapi import FastAPI
++from pydantic import BaseModel, computed_field
++
++app = FastAPI()
++
++class Item(BaseModel):
++    name: str
++    price: float
++
++    @computed_field
++    @property
++    def total(self) -> float:
++        return self.price * 1.2
++
++@app.get("/item", response_model=Item)
++def get_item():
++    return Item(name="Test", price=10.0)
++
++if __name__ == "__main__":
++    import json
++    print(json.dumps(app.openapi(), indent=2))

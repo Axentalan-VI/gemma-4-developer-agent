@@ -1,0 +1,12 @@
+name: verifier
+model: gemma-4-31b-it-qat-w4a16-ct
+description: Runs the tests against the edit already in the working tree, repairs what fails, and cleans up.
+instruction: !include ../prompts/verifier.md
+generate_content_config: !include ../configs/sampling.yaml
+include_contents: none
+tools:
+  - run_command
+  - read_file
+  - edit_file
+  - get_status
+  - submit_patch

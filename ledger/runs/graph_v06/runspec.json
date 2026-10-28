@@ -1,0 +1,30 @@
+{
+  "bundle_hash": "01edeb6c0ae48adf0ce4b94c21b6ec1395f9df4ad80cb0e7975a57b89e641b4a",
+  "bundle_hashes": {
+    "v00_public_baseline": "6f3c38bf51665b0145c6106ba45a1c83816ca027e3718c39f12437ee8178ed28",
+    "v01_hygiene": "b590d16060ecbfd7f92ce8c05dc36b7dfa8a167aed4b81f8b60ac09adc83a658",
+    "v02_context_budget": "5f62c0069564810c6773b6a2043da43b43b2a75c4f1a97073db93c05a27c1834",
+    "v03_budget_guard": "5d9e0acc8a81cc73dda02bf5732fe28de2716fc153e31b0e5275a67cc75ac319",
+    "v04_lean": "2c62746873d98cb2fafa1564d05b38940a42997194ed1f2477b699935331309e",
+    "v05_no_analyzer": "5f47540cdfb9bf01d6ef34d013f2f31c4c3083abe67a9d7e9063f3d284e9dbf4",
+    "v06_graph_coder": "01edeb6c0ae48adf0ce4b94c21b6ec1395f9df4ad80cb0e7975a57b89e641b4a"
+  },
+  "chunk_size": 12,
+  "concurrency": 12,
+  "deadline_minutes": 480,
+  "enable_thinking": true,
+  "max_model_len": 32768,
+  "max_num_seqs": 32,
+  "max_time_minutes": 30.0,
+  "max_tool_calls": 100,
+  "prefix_caching": false,
+  "reasoning_parser": "gemma4",
+  "reserve_minutes": 45,
+  "resume_run_id": null,
+  "run_id": "graph_v06",
+  "seed": 1001,
+  "surrogate": false,
+  "task_list": "clean_dev.txt",
+  "tool_call_parser": "gemma4",
+  "variant": "v06_graph_coder"
+}

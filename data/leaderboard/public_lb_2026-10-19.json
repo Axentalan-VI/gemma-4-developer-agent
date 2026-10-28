@@ -1,0 +1,29 @@
+{
+ "source": "kaggle competitions leaderboard gemma-4-developer-agent --download",
+ "captured_utc": "2026-10-19T09:01:09",
+ "competition": "gemma-4-developer-agent",
+ "teams": 3199,
+ "our_team": {
+  "name": "Ahmed_Sherif382",
+  "rank": 1402,
+  "score": 0.13,
+  "submissions": 4
+ },
+ "histogram": {
+  "0.24": 2,
+  "0.22": 29,
+  "0.20": 115,
+  "0.18": 355,
+  "0.17": 464,
+  "0.15": 429,
+  "0.13": 353,
+  "0.12": 312,
+  "0.10": 287,
+  "0.08": 222,
+  "0.06": 158,
+  "0.05": 148,
+  "0.03": 107,
+  "0.01": 62,
+  "0.00": 156
+ }
+}

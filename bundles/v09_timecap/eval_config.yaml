@@ -1,0 +1,32 @@
+# THE ONLY ADDITION vs v00_public_baseline. Every other file in this bundle is
+# byte-identical to v00, which scored 0.13 on 2026-09-30.
+#
+# WHY THIS EXISTS: every submission since 2026-10-08 has failed with
+# "Notebook Timeout" -- v06 (10-13), v07 (10-19) and a byte-identical v00
+# CONTROL (10-20). The control is what rules out the bundles: the same bytes
+# that scored 0.13 now time out. So the evaluation got slower, not worse.
+#
+# WHY IT GOT SLOWER: the competition wheelhouse was republished 2026-10-12
+# 19:51:31, and T005 measured a 2.3x slowdown on IDENTICAL v00 bytes straddling
+# exactly that boundary -- summed task wall 287.7 -> 636.5 min, median 25.9 ->
+# 60.4. Every submission before the republication scored; every one after has
+# timed out. The wheelhouse arrives as `dataset_sources`, so no pin of ours can
+# hold it still.
+#
+# WHY 30 MINUTES: the default is 60. Pre-slowdown, v00's median task wall was
+# 25.9 min with 0 of 12 tasks reaching the 60-minute cap (P005, 2026-10-12
+# 13:42Z) -- and in that regime the grader finished and scored us. 30 restores
+# that per-task envelope with margin, rather than being a round number.
+#
+# WHAT IT COSTS: tasks that would have resolved between 30 and 60 minutes are
+# truncated and lost. That is accepted deliberately, because a Notebook Timeout
+# scores NOTHING -- every task is lost, not just the slow ones. A lower score
+# that exists beats a perfect one that never reports.
+#
+# The validator WARNS that this "throws away part of the 60-minute budget".
+# That warning assumes more time is always better. The timeout inverts it here.
+#
+# max_tool_calls is deliberately omitted so the grader's own 100 applies. This
+# bundle changes ONE thing.
+evaluation:
+  max_time_minutes: 30

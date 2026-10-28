@@ -1,0 +1,33 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 00000000..518dcd66
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,27 @@
++from __future__ import annotations
++from fastapi import FastAPI
++from fastapi.testclient import TestClient
++from pydantic import BaseModel
++
++class Item(BaseModel):
++    name: str
++    price: float
++
++app = FastAPI()
++
++@app.post('/items/')
++async def create_item(item: Item):
++    return item
++
++client = TestClient(app)
++
++def test_repro():
++    try:
++        response = client.post('/items/', json={'name': 'foo', 'price': 1.0})
++        print(f'Response: {response.status_code}, {response.json()}')
++        assert response.status_code == 200
++    except Exception as e:
++        print(f'Caught exception: {e}')
++
++if __name__ == '__main__':
++    test_repro()

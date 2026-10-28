@@ -1,0 +1,8 @@
+# Prompt bytes are part of the experiment. A CRLF slipping into a YAML scalar
+# breaks parsing and silently changes bundle_hash, so normalize everything.
+* text=auto eol=lf
+*.safetensors binary
+*.npz binary
+*.tgz binary
+*.zip binary
+*.ipynb text eol=lf

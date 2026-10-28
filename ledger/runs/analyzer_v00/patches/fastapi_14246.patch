@@ -1,0 +1,29 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 00000000..8ecbcf27
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,23 @@
++from fastapi import FastAPI
++from pydantic import BaseModel
++from fastapi.openapi.utils import get_openapi
++import json
++
++app = FastAPI()
++
++class Item(BaseModel):
++    name: str
++    description: str
++
++class User(BaseModel):
++    username: str
++    item: Item
++
++@app.post("/user", response_model=User)
++def create_user(user: User):
++    return user
++
++# We need to call the app to get the openapi schema
++# In recent fastapi versions, get_openapi(app, of_path="/openapi.json") should work.
++openapi_schema = get_openapi(app, of_path="/openapi.json")
++print(json.dumps(openapi_schema, indent=2))

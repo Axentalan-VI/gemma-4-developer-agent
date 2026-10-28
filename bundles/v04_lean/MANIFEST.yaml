@@ -1,0 +1,80 @@
+variant: v04_lean
+parent: v00_public_baseline
+hypothesis: >
+  v00's prompts, byte for byte, plus the ONE change that has mechanical evidence
+  and no prompt text: split sampling ceilings. This is a deliberate retreat from
+  v01/v02/v03, triggered by the leaderboard.
+
+  v01_hygiene scored **0.08** against v00's **0.13** (2026-10-07). v01's own
+  MANIFEST named this exact risk -- "the one prompt-level A/B in the community
+  corpus claims short and generic beats long and rule-laden: a competitor's long
+  lab-derived ruleset scored 0.05 against the short public prompt's 0.12-0.15.
+  This bundle is longer than v00, so it is exposed to exactly that failure" -- and
+  pre-committed the response: "If this bundle regresses, the next one tests the
+  same items as a *shorter* prompt rather than abandoning them." This is that
+  bundle, taken to its limit: no prompt change at all.
+
+  v00 prompts are 3,628 bytes; v03's are 9,402, a 2.6x increase. The leaderboard
+  cannot say which of v01's eleven items hurt, so this bundle removes the whole
+  axis and keeps only the change that is not prompt text.
+topology: unchanged from v00 (root coder + read-only code_analyzer AgentTool)
+ships_eval_config: false
+
+changes:
+  - id: split-sampling-ceilings
+    why: >
+      THE ONLY CHANGE. v00 shares one sampling config between coder and analyzer at
+      max_output_tokens 8192, which leaves a 24,576-token input ceiling on both.
+      max_output_tokens is a RESERVATION sent on every request, so the real input
+      ceiling is 32768 minus it.
+
+      MEASURED, probe_c12 and P002: a prompt reached 24,577 input tokens and died on
+      a NON-RETRYABLE ContextWindowExceededError -- one token over, task lost
+      outright rather than degraded. P002 counted **3 of 12** such deaths on v00 and
+      **1 of 12** on v03, whose coder ceiling is 4096 (28,672 input) and analyzer
+      2048 (30,720 input). This bundle takes exactly those two numbers.
+
+      It is also the only item in v01/v02/v03 whose effect was observed as a
+      mechanism rather than inferred from a rate: a specific error, at a specific
+      token count, that stopped occurring.
+
+expected_delta: >
+  Against v00: positive but small, and bounded by how often the ceiling is hit.
+  3 of 12 tasks died on it in P002, but 2 of those 3 are the same two tasks every
+  time (fastapi_13207, fastapi_13786), so on a 60-task private set the honest
+  expectation is low single digits of tasks -- around +0.02 to +0.05, which is
+  inside the leaderboard's own noise. The reason to ship it anyway is that it
+  cannot plausibly hurt: it strictly enlarges the input budget and changes no text.
+
+  Against v01's 0.08 the expectation is a recovery toward 0.13, and THAT is the
+  informative comparison. If v04 lands near 0.13 it isolates the regression to
+  prompt length. If it also lands near 0.08, the prompt was not the cause and
+  something in the sampling or the submission path is, which would be a much more
+  important finding.
+
+measured:
+  clean_n: null
+  k: 0
+  leaderboard: null
+  evidence_from: >
+    P002 (2026-10-07), 12 paired tasks at the grader's 100-call budget: v00 3
+    context-window deaths, v03 1. Also probe_c12 (2026-10-06), where both deaths
+    were inside agent_tool, which is why the analyzer gets the tighter ceiling.
+
+risks:
+  - >
+    This is a single-knob experiment, which this project normally avoids because
+    the detectable effect is larger than one knob's effect. It is justified here
+    because the knob is NOT prompt text: the whole point is to vary prompt length
+    alone against v01, and that requires holding the prompt at v00's bytes.
+  - >
+    The expected effect is inside the leaderboard's noise band (three runs of
+    identical bytes scored 0.12/0.13/0.15). A 0.13 from this bundle is therefore
+    consistent with "the ceiling fix did nothing and the prompt was the problem",
+    which is still the finding we need. Do not read a +0.02 as the ceiling fix
+    working.
+  - >
+    v01's 0.08 is itself one draw. 0.13 -> 0.08 is -0.05, just under the 0.06 this
+    project treats as the threshold for evidence, so "v01 regressed" is the most
+    likely reading but not a proven one. This bundle is the cheap way to test it,
+    at the cost of one submission.

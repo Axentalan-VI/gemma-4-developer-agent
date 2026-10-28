@@ -1,0 +1,9 @@
+# The analyzer returns a fixed 250-word report, so it needs far less output room
+# than the coder. Keeping it small leaves more of the shared context for code.
+temperature: 0.1
+top_p: 0.95
+top_k: 40
+max_output_tokens: 3072
+thinking_config:
+  thinking_budget: 2048
+  include_thoughts: false

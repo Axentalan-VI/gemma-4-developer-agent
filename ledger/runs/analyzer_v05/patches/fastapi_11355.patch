@@ -1,0 +1,42 @@
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 00000000..39b84db0
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,36 @@
++from __future__ import annotations
++from typing import ForwardRef
++from fastapi.dependencies.utils import get_typed_annotation
++import inspect
++
++class MyModel:
++    pass
++
++def my_func(a: MyModel):
++    pass
++
++def test_string_annotation():
++    # This is what happens with from __future__ import annotations
++    annotation = "MyModel"
++    globalns = {"MyModel": MyModel}
++    evaluated = get_typed_annotation(annotation, globalns)
++    assert evaluated is MyModel
++    print("test_string_annotation passed")
++
++def test_forwardref_annotation():
++    # This is what happens if it's already a ForwardRef
++    annotation = ForwardRef("MyModel")
++    globalns = {"MyModel": MyModel}
++    evaluated = get_typed_annotation(annotation, globalns)
++    assert evaluated is MyModel
++    print("test_forwardref_annotation passed")
++
++if __name__ == "__main__":
++    try:
++        test_string_annotation()
++        test_forwardref_annotation()
++        print("All tests passed")
++    except Exception as e:
++        print(f"Failure: {e}")
++        import traceback
++        traceback.print_exc()

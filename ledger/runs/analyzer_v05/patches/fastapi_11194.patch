@@ -1,0 +1,126 @@
+diff --git a/fastapi/routing.py b/fastapi/routing.py
+index f620ced5..8db556e4 100644
+--- a/fastapi/routing.py
++++ b/fastapi/routing.py
+@@ -845,8 +845,6 @@ class APIRouter(routing.Router):
+             routes=routes,
+             redirect_slashes=redirect_slashes,
+             default=default,
+-            on_startup=on_startup,
+-            on_shutdown=on_shutdown,
+             lifespan=lifespan,
+         )
+         if prefix:
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 00000000..ed0af871
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,48 @@
++from fastapi import FastAPI, File, Form, UploadFile
++from fastapi.testclient import TestClient
++
++app = FastAPI()
++app.max_body_size = None  # Monkeypatch to fix the environment issue
++
++@app.post("/upload")
++async def upload(form_data: str = Form(...), file: UploadFile = File(...)):
++    return {"form_data": form_data, "file": file.filename}
++
++client = TestClient(app)
++
++def test_form_then_file():
++    # This is the case that is reported to fail
++    files = {"file": ("test.txt", b"hello world")}
++    data = {"form_data": "some data"}
++    response = client.post("/upload", data=data, files=files)
++    print(f"Response status: {response.status_code}")
++    if response.status_code != 200:
++        print(f"Response body: {response.json()}")
++    assert response.status_code == 200
++
++def test_file_then_form():
++    # This is the case that is reported to work
++    @app.post("/upload-reversed")
++    async def upload_reversed(file: UploadFile = File(...), form_data: str = Form(...)):
++        return {"form_data": form_data, "file": file.filename}
++    
++    files = {"file": ("test.txt", b"hello world")}
++    data = {"form_data": "some data"}
++    response = client.post("/upload-reversed", data=data, files=files)
++    print(f"Response status: {response.status_code}")
++    if response.status_code != 200:
++        print(f"Response body: {response.json()}")
++    assert response.status_code == 200
++
++if __name__ == "__main__":
++    try:
++        test_form_then_file()
++        print("test_form_then_file passed")
++    except Exception as e:
++        print(f"test_form_then_file failed: {e}")
++    
++    try:
++        test_file_then_form()
++        print("test_file_then_form passed")
++    except Exception as e:
++        print(f"test_file_then_form failed: {e}")
+diff --git a/repro_multi.py b/repro_multi.py
+new file mode 100644
+index 00000000..8ff7e183
+--- /dev/null
++++ b/repro_multi.py
+@@ -0,0 +1,53 @@
++from fastapi import FastAPI, File, Form, UploadFile
++from fastapi.testclient import TestClient
++from typing import List
++
++app = FastAPI()
++app.max_body_size = None  # Monkeypatch to fix the environment issue
++
++@app.post("/upload")
++async def upload(form_data: str = Form(...), files: List[UploadFile] = File(...)):
++    return {"form_data": form_data, "files": [f.filename for f in files]}
++
++client = TestClient(app)
++
++def test_form_then_multiple_files():
++    files = [
++        ("files", ("test1.txt", b"hello world 1")),
++        ("files", ("test2.txt", b"hello world 2")),
++    ]
++    data = {"form_data": "some data"}
++    response = client.post("/upload", data=data, files=files)
++    print(f"Response status: {response.status_code}")
++    if response.status_code != 200:
++        print(f"Response body: {response.json()}")
++    assert response.status_code == 200
++
++def test_multiple_files_then_form():
++    @app.post("/upload-reversed")
++    async def upload_reversed(files: List[UploadFile] = File(...), form_data: str = Form(...)):
++        return {"form_data": form_data, "files": [f.filename for f in files]}
++    
++    files = [
++        ("files", ("test1.txt", b"hello world 1")),
++        ("files", ("test2.txt", b"hello world 2")),
++    ]
++    data = {"form_data": "some data"}
++    response = client.post("/upload-reversed", data=data, files=files)
++    print(f"Response status: {response.status_code}")
++    if response.status_code != 200:
++        print(f"Response body: {response.json()}")
++    assert response.status_code == 200
++
++if __name__ == "__main__":
++    try:
++        test_form_then_multiple_files()
++        print("test_form_then_multiple_files passed")
++    except Exception as e:
++        print(f"test_form_then_multiple_files failed: {e}")
++    
++    try:
++        test_multiple_files_then_form()
++        print("test_multiple_files_then_form passed")
++    except Exception as e:
++        print(f"test_multiple_files_then_form failed: {e}")

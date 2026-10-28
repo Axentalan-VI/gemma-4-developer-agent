@@ -1,0 +1,16 @@
+# The analyzer is where the context actually blows up, and run probe_c12 proves
+# it: both observed failures were inside agent_tool.py, i.e. this sub-agent, not
+# the coder. It holds the three flood-prone tools -- search_similar_code returns
+# full node source, and the subgraph/neighbors tools can return large trees.
+#
+# It also emits a fixed ~250-word report, so a large output reservation is pure
+# dead weight that buys nothing and costs input ceiling. 2048 leaves 30,720.
+#
+# temperature 0.1: this is deterministic extraction, not authoring.
+temperature: 0.1
+top_p: 0.95
+top_k: 40
+max_output_tokens: 2048
+thinking_config:
+  thinking_budget: 1024
+  include_thoughts: false

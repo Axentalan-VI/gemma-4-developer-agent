@@ -1,0 +1,22 @@
+# max_output_tokens is a RESERVATION, not a cap.
+#
+# litellm sends it on every request and vLLM rejects the call outright when
+# input + max_output_tokens > max_model_len. So the real input ceiling is
+# 32768 - max_output_tokens, and a generous output budget silently shrinks the
+# prompt the agent is allowed to have.
+#
+# Measured in run probe_c12 (2026-10-06): a prompt reached 24,577 input tokens
+# and died on a NON-RETRYABLE ContextWindowExceededError -- the task is lost
+# outright, not degraded. v01's 12288 reservation leaves only 20,480, which is
+# worse than v00's 24,576 on this path.
+#
+# 4096 leaves a 28,672-token ceiling, above everything yet observed, while
+# still fitting 2048 of thinking plus a large edit_file call in the visible
+# half. Raise this only against a measured prompt-size distribution.
+temperature: 0.2
+top_p: 0.95
+top_k: 40
+max_output_tokens: 4096
+thinking_config:
+  thinking_budget: 2048
+  include_thoughts: false

@@ -1,0 +1,72 @@
+diff --git a/fastapi/dependencies/utils.py b/fastapi/dependencies/utils.py
+index e49380cb..cccb3f95 100644
+--- a/fastapi/dependencies/utils.py
++++ b/fastapi/dependencies/utils.py
+@@ -368,14 +368,18 @@ def analyze_param(
+         use_annotation = annotation
+         type_annotation = annotation
+     # Extract Annotated info
+-    if get_origin(use_annotation) is Annotated:
+-        annotated_args = get_args(annotation)
++    fastapi_annotations = []
++    while get_origin(use_annotation) is Annotated:
++        annotated_args = get_args(use_annotation)
+         type_annotation = annotated_args[0]
+-        fastapi_annotations = [
++        fastapi_annotations.extend([
+             arg
+             for arg in annotated_args[1:]
+             if isinstance(arg, (FieldInfo, params.Depends))
+-        ]
++        ])
++        use_annotation = type_annotation
++
++    if fastapi_annotations:
+         fastapi_specific_annotations = [
+             arg
+             for arg in fastapi_annotations
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 00000000..0eaf8a41
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,39 @@
++from fastapi import FastAPI, Body
++from fastapi.testclient import TestClient
++from typing import Annotated, Union, Literal
++from pydantic import BaseModel, Discriminator
++
++class Cat(BaseModel):
++    pet_type: Literal["cat"]
++    meow: bool
++
++class Dog(BaseModel):
++    pet_type: Literal["dog"]
++    bark: bool
++
++Pet = Annotated[Union[Cat, Dog], Discriminator("pet_type")]
++
++app = FastAPI()
++
++@app.post("/pet")
++async def create_pet(pet: Pet):
++    return pet
++
++client = TestClient(app)
++
++def test_tagged_union_body():
++    # This should be a request body
++    response = client.post("/pet", json={"pet_type": "cat", "meow": True})
++    print(f"Status code: {response.status_code}")
++    print(f"Response body: {response.json()}")
++    assert response.status_code == 200
++    assert response.json() == {"pet_type": "cat", "meow": True}
++
++if __name__ == "__main__":
++    try:
++        test_tagged_union_body()
++        print("Test passed!")
++    except Exception as e:
++        print(f"Test failed: {e}")
++        import traceback
++        traceback.print_exc()

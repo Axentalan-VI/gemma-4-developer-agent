@@ -1,0 +1,155 @@
+variant: v06_graph_coder
+parent: v00_public_baseline
+
+retired: 2026-10-19
+retired_by: P007
+retired_because: >
+  Strictly dominated: identical outcome quality, significantly more wall clock.
+  On the 21 of 60 tasks that completed in BOTH arms -- the only selection-free
+  comparison, because v06 itself causes the timeouts -- v06 and v00 are exactly
+  equal on all three metrics: gold_hit 16/21 vs 16/21, gold_exact 6/21 vs 6/21,
+  resolved 3/21 vs 3/21. The ONLY significant effect across 120 task-runs is that
+  v06 timed out on 35/60 against v00's 22/60 (17 gained, 4 lost, McNemar
+  p=0.0072). The same three tasks resolved in both arms.
+
+  The 30-minute cap was pre-registered as FAVOURING v06's efficiency claim, so
+  this null is a strong rejection rather than a weak one.
+
+  Also: this bundle's own primary risk is refuted. `ContextWindowExceededError`
+  was named the main danger; the taxonomy across 60 v06 task-runs is 35 session
+  timeouts and nothing else -- ZERO context deaths. The right risk was wall clock
+  and it was listed second.
+
+  Its submission (ref 57145400) also returned `COMPLETE` with a BLANK score after
+  six days, for which measured slowness is the best available explanation.
+
+  DO NOT revisit `search_similar_code` / `get_code_neighbors` on the root coder.
+  See EXPERIMENTS.md "P007 RESULT" and "E013-LB".
+hypothesis: >
+  Give the ROOT coder the two cheap code-intelligence tools it has never had.
+
+  In v00 `search_similar_code`, `get_code_neighbors` and `get_code_subgraph` are
+  held ONLY by the read-only `code_analyzer` sub-agent. The coder navigates with
+  `grep` through `run_command` and with `read_file`, which returns at most **150
+  lines and 10,000 characters** per charged call (HARNESS_README 6.2, confirmed in
+  `reference/harness_facts/defaults.json`). `search_similar_code(query, k)`
+  returns, in ONE charged call, the `node_name`, `similarity` AND full `code` of
+  the top-k matching symbols (HARNESS_README 6.3 #8). So the information per unit
+  of budget differs by roughly an order of magnitude, and the coder has been
+  denied the cheaper instrument throughout this project.
+
+  This is a CAPABILITY change, which is the only class of change this project has
+  evidence for. v03's prompt-level anti-repeat rules *raised* the re-issue rate
+  0.410 -> 0.485, and P006 showed that removing a component moves process metrics
+  reliably where text does not. The tools list is enforced by the compiler; a
+  prompt instruction is not.
+
+  Why the prompt also changes, and why that is not a second experiment: v00's
+  step 2 explicitly prescribes "call `code_analyzer` first, then grep". Adding
+  tools while leaving that text would route the agent around the new capability,
+  so the capability would be untested rather than unused. The prompt edit is
+  confined to step 2 and is the instruction to use the new tools; no other byte
+  of any prompt changes (`diff` against v00 shows 2 added tool lines and one
+  rewritten step).
+
+topology: unchanged from v00 (root coder + read-only code_analyzer AgentTool)
+ships_eval_config: false
+
+changes:
+  - id: graph-tools-on-root-coder
+    why: >
+      Adds `search_similar_code` and `get_code_neighbors` to the root agent's
+      tools. Deliberately NOT `get_code_subgraph`: it returns an edge list whose
+      size is unbounded in the number of symbols passed, and it answers a question
+      ("how do these connect") the coder does not need before editing.
+
+      `get_code_neighbors` is included because its output is small -- a list of
+      neighbour names plus a count -- so it adds callers/callees context at almost
+      no context cost.
+
+  - id: step-2-localize-rewrite
+    why: >
+      Reorders step 2 to symbol-first: `search_similar_code` with an explicit
+      `k=3`, then `get_code_neighbors`, then `code_analyzer` only if those failed,
+      then grep as the fallback for error-message strings and other non-symbol
+      text. `k=3` rather than the default 10 is the context-pressure mitigation
+      (see risks). The prompt tells the model to pass a SYMBOL, never a sentence,
+      because the sandbox has no live embedding server: `embed(query)` resolves
+      the query against node keys in the .npz archive, so a natural-language query
+      degrades to nonsense (HARNESS_README 6.3 #8, "Query Resolution Note").
+
+expected_delta: >
+  PRE-REGISTERED 2026-10-13, before any run. Read this table and nothing else.
+
+  Primary local metric is `gold_hit` on a paired subset, NOT resolution: P005 and
+  P006 both returned 0/12 resolved, so resolution cannot rank anything at
+  affordable k. Leaderboard `resolved` remains the only ship authority.
+
+  - gold_hit UP by more than the paired SE  -> the coder was navigation-limited;
+    the capability is the lever. Keep and iterate on it.
+  - gold_hit FLAT (the modal outcome)       -> localization was never the
+    constraint. Note that v00 already reached gold_hit 5/12 while resolving 0/12,
+    so "right file, wrong fix" is the live alternative hypothesis and a flat
+    result CONFIRMS it rather than being uninformative. Next bundle must target
+    fix quality (verify-repair), not navigation.
+  - gold_hit DOWN                           -> the new tools are displacing
+    better behaviour, or context pressure is costing tasks. Check
+    `error` for ContextWindowExceededError before concluding anything else.
+
+  On the leaderboard, against v00's 0.13 = 8/58 tasks: expect somewhere between
+  7 and 10 tasks. Anything inside that band is a null, because one task is 0.0172
+  and the SE of a single 58-task draw is ~0.045 = 2.6 tasks. **Do not read a move
+  from 0.13 to 0.15 as this bundle working.** The only leaderboard result that
+  would be evidence on its own is 11+ tasks (0.18), i.e. a 3-task gain.
+
+measured:
+  clean_n: null
+  k: 0
+  leaderboard: null
+  evidence_from: >
+    Not yet measured. The motivating numbers are first-party but indirect:
+    P006 `analyzer_v00` and `analyzer_v05` (2026-10-13, 12 paired fastapi tasks,
+    `ledger/runs/analyzer_v0{0,5}/task_results.jsonl`) -- gold_hit 5/12 on both
+    arms with resolved 0/12 on both, and a v00 median wall of 60.4 min with 6 of
+    12 tasks terminated by the 60-minute session cap. The read_file and
+    search_similar_code return contracts are from HARNESS_README 6.2/6.3 and the
+    harness defaults, not from a run.
+
+risks:
+  - >
+    CONTEXT PRESSURE IS THE REAL RISK, and it has already cost this project
+    tasks. `max_output_tokens` is a RESERVATION sent on every request, so the
+    root coder's input ceiling is 32768 - 8192 = 24,576 tokens. A prompt reaching
+    24,577 died on a NON-RETRYABLE ContextWindowExceededError and the task was
+    lost outright rather than degraded (LESSONS 2026-10-06). `search_similar_code`
+    returns full source for k symbols straight into the ROOT context -- exactly
+    what HARNESS_README 10.4 says the AgentTool pattern exists to prevent.
+
+    Mitigations: `k=3` in the prompt, `get_code_subgraph` omitted, and the
+    analyzer kept so heavy exploration still has somewhere isolated to go. None
+    of these is enforced -- the model may pass k=10 regardless, since the default
+    is 10 and only the prompt asks otherwise. **Before reading any other metric,
+    count ContextWindowExceededError in the ledger `error` field.** If it rose,
+    this bundle is refuted on mechanics and the retry is v06 with a lower
+    `max_output_tokens` on the root, not a prompt tweak.
+  - >
+    Graph tools require `data/graphs/<repo>.json` and `data/embeddings/<repo>.npz`
+    to exist for the repo under test (HARNESS_README 6.3). They are present for
+    the public set; whether they exist for every PRIVATE repo is unknown. If they
+    are missing the tools presumably error, and the prompt now sends the coder to
+    them FIRST, which would waste two charged calls per task before it falls back.
+    This is the strongest argument for keeping the grep fallback explicit, which
+    step 2 does.
+  - >
+    This bundle does not address the bottleneck P006 most implicates. 5 of 12
+    tasks produced a real code change and NONE resolved, so fix quality -- not
+    localization -- is the likeliest limit. v06 is justified as the cheapest
+    untried capability change, not as the best-targeted one, and its flat outcome
+    is a genuine result (see expected_delta).
+  - >
+    v00 is wall-clock bound in the CURRENT environment: median 60.4 min with 6 of
+    12 tasks hitting the 60-minute cap in P006, against a 25.9-min median and 0
+    at the cap in P005 on identical bytes. v06 keeps the analyzer, so it inherits
+    that exposure. If the new tools shorten exploration they may relieve it; if
+    they add context-compaction work they may worsen it. Record wall clock and
+    cap-terminations for both arms.

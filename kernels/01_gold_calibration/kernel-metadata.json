@@ -1,0 +1,19 @@
+{
+  "id": "ahmedsherif382/swegemma-gold-calibration",
+  "title": "swegemma gold calibration",
+  "code_file": "01_gold_calibration.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": true,
+  "dataset_sources": [
+    "ahmedsherif382/swegemma-lab",
+    "metric/gemma-4-developer-agent-wheelhouse"
+  ],
+  "competition_sources": [
+    "gemma-4-developer-agent"
+  ],
+  "kernel_sources": []
+}

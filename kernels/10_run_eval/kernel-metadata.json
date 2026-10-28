@@ -1,0 +1,26 @@
+{
+  "id": "ahmedsherif382/swegemma-paired-eval",
+  "title": "swegemma paired eval",
+  "code_file": "10_run_eval.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "machine_shape": "NvidiaL4",
+  "docker_image_pinning_type": "original",
+  "dataset_sources": [
+    "ahmedsherif382/swegemma-lab",
+    "metric/gemma-4-developer-agent-wheelhouse"
+  ],
+  "competition_sources": [
+    "gemma-4-developer-agent"
+  ],
+  "model_sources": [
+    "google/gemma-4/other/gemma-4-31b-it-qat-w4a16-ct/2"
+  ],
+  "kernel_sources": [
+    "ahmedsherif382/swegemma-fetch-torch"
+  ]
+}

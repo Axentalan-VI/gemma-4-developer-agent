@@ -1,0 +1,44 @@
+diff --git a/fastapi/routing.py b/fastapi/routing.py
+index 54c75a02..00abdb67 100644
+--- a/fastapi/routing.py
++++ b/fastapi/routing.py
+@@ -839,8 +839,6 @@ class APIRouter(routing.Router):
+             routes=routes,
+             redirect_slashes=redirect_slashes,
+             default=default,
+-            on_startup=on_startup,
+-            on_shutdown=on_shutdown,
+             lifespan=lifespan,
+         )
+         if prefix:
+diff --git a/repro.py b/repro.py
+new file mode 100644
+index 00000000..87ee8e9c
+--- /dev/null
++++ b/repro.py
+@@ -0,0 +1,25 @@
++from fastapi import FastAPI
++from fastapi.openapi.utils import get_openapi
++import json
++
++app = FastAPI(
++    title="Test API",
++    version="1.0.0",
++    external_docs={
++        "description": "External Docs",
++        "url": "https://example.com",
++    },
++)
++
++def test_external_docs():
++    schema = app.openapi()
++    assert "info" in schema
++    assert "externalDocs" in schema["info"]
++    assert schema["info"]["externalDocs"] == {
++        "description": "External Docs",
++        "url": "https://example.com",
++    }
++    print("Test passed!")
++
++if __name__ == "__main__":
++    test_external_docs()

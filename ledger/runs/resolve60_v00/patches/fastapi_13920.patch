@@ -1,0 +1,154 @@
+diff --git a/fastapi/_compat/shared.py b/fastapi/_compat/shared.py
+index 68b9bbdf..fe64bad9 100644
+--- a/fastapi/_compat/shared.py
++++ b/fastapi/_compat/shared.py
+@@ -46,6 +46,17 @@ Url: type[Any]
+ 
+ 
+ # Copy of Pydantic: pydantic/_internal/_utils.py
++
++def is_typealiastype(tp: Any) -> bool:
++    return isinstance(tp, getattr(typing, "TypeAliasType", type(None)))
++
++
++def unwrap_type_alias(annotation: Any) -> Any:
++    while is_typealiastype(annotation):
++        annotation = getattr(annotation, "__value__")
++    return annotation
++
++
+ def lenient_issubclass(
+     cls: Any, class_or_tuple: Union[type[Any], tuple[type[Any], ...], None]
+ ) -> bool:
+@@ -64,6 +75,7 @@ def _annotation_is_sequence(annotation: Union[type[Any], None]) -> bool:
+ 
+ 
+ def field_annotation_is_sequence(annotation: Union[type[Any], None]) -> bool:
++    annotation = unwrap_type_alias(annotation)
+     origin = get_origin(annotation)
+     if origin is Union or origin is UnionType:
+         for arg in get_args(annotation):
+@@ -88,6 +100,7 @@ def _annotation_is_complex(annotation: Union[type[Any], None]) -> bool:
+ 
+ 
+ def field_annotation_is_complex(annotation: Union[type[Any], None]) -> bool:
++    annotation = unwrap_type_alias(annotation)
+     origin = get_origin(annotation)
+     if origin is Union or origin is UnionType:
+         return any(field_annotation_is_complex(arg) for arg in get_args(annotation))
+@@ -109,6 +122,7 @@ def field_annotation_is_scalar(annotation: Any) -> bool:
+ 
+ 
+ def field_annotation_is_scalar_sequence(annotation: Union[type[Any], None]) -> bool:
++    annotation = unwrap_type_alias(annotation)
+     origin = get_origin(annotation)
+     if origin is Union or origin is UnionType:
+         at_least_one_scalar_sequence = False
+@@ -126,6 +140,7 @@ def field_annotation_is_scalar_sequence(annotation: Union[type[Any], None]) -> b
+ 
+ 
+ def is_bytes_or_nonable_bytes_annotation(annotation: Any) -> bool:
++    annotation = unwrap_type_alias(annotation)
+     if lenient_issubclass(annotation, bytes):
+         return True
+     origin = get_origin(annotation)
+@@ -137,6 +152,7 @@ def is_bytes_or_nonable_bytes_annotation(annotation: Any) -> bool:
+ 
+ 
+ def is_uploadfile_or_nonable_uploadfile_annotation(annotation: Any) -> bool:
++    annotation = unwrap_type_alias(annotation)
+     if lenient_issubclass(annotation, UploadFile):
+         return True
+     origin = get_origin(annotation)
+@@ -148,6 +164,7 @@ def is_uploadfile_or_nonable_uploadfile_annotation(annotation: Any) -> bool:
+ 
+ 
+ def is_bytes_sequence_annotation(annotation: Any) -> bool:
++    annotation = unwrap_type_alias(annotation)
+     origin = get_origin(annotation)
+     if origin is Union or origin is UnionType:
+         at_least_one = False
+@@ -163,6 +180,7 @@ def is_bytes_sequence_annotation(annotation: Any) -> bool:
+ 
+ 
+ def is_uploadfile_sequence_annotation(annotation: Any) -> bool:
++    annotation = unwrap_type_alias(annotation)
+     origin = get_origin(annotation)
+     if origin is Union or origin is UnionType:
+         at_least_one = False
+@@ -192,6 +210,7 @@ def is_pydantic_v1_model_class(cls: Any) -> bool:
+ 
+ 
+ def annotation_is_pydantic_v1(annotation: Any) -> bool:
++    annotation = unwrap_type_alias(annotation)
+     if is_pydantic_v1_model_class(annotation):
+         return True
+     origin = get_origin(annotation)
+diff --git a/repro_type_alias.py b/repro_type_alias.py
+new file mode 100644
+index 00000000..e852637b
+--- /dev/null
++++ b/repro_type_alias.py
+@@ -0,0 +1,14 @@
++import types
++import typing
++
++try:
++    print(f"TypeAliasType exists: {hasattr(types, 'TypeAliasType')}")
++    if hasattr(types, 'TypeAliasType'):
++        # Using the 'type' keyword for type aliases (PEP 695)
++        # This requires Python 3.12+
++        # Since we are in 3.13, this should work.
++        # However, we can't use the 'type' keyword in a string and exec it easily if we want to be safe, 
++        # but we can just write it in the file.
++        pass
++except Exception as e:
++    print(f"Error: {e}")
+diff --git a/verify_pep695.py b/verify_pep695.py
+new file mode 100644
+index 00000000..f8141ea2
+--- /dev/null
++++ b/verify_pep695.py
+@@ -0,0 +1,42 @@
++import typing
++from fastapi._compat.shared import (
++    field_annotation_is_sequence,
++    field_annotation_is_complex,
++    field_annotation_is_scalar_sequence,
++    is_bytes_or_nonable_bytes_annotation,
++    is_uploadfile_or_nonable_uploadfile_annotation,
++    is_bytes_sequence_annotation,
++    is_uploadfile_sequence_annotation,
++    annotation_is_pydantic_v1,
++)
++
++# Python 3.12+ syntax
++try:
++    exec("type AliasList = list[int]", globals())
++    AliasList = globals()['AliasList']
++    
++    exec("type AliasComplex = dict[str, int]", globals())
++    AliasComplex = globals()['AliasComplex']
++    
++    exec("type AliasScalarSeq = list[int]", globals())
++    AliasScalarSeq = globals()['AliasScalarSeq']
++    
++    exec("type AliasBytes = bytes", globals())
++    AliasBytes = globals()['AliasBytes']
++    
++    exec("type AliasUploadFile = bytes", globals()) # Using bytes as proxy for UploadFile for simplicity in this test
++    AliasUploadFile = globals()['AliasUploadFile']
++
++    print(f"field_annotation_is_sequence(AliasList): {field_annotation_is_sequence(AliasList)} (Expected: True)")
++    print(f"field_annotation_is_complex(AliasComplex): {field_annotation_is_complex(AliasComplex)} (Expected: True)")
++    print(f"field_annotation_is_scalar_sequence(AliasScalarSeq): {field_annotation_is_scalar_sequence(AliasScalarSeq)} (Expected: True)")
++    print(f"is_bytes_or_nonable_bytes_annotation(AliasBytes): {is_bytes_or_nonable_bytes_annotation(AliasBytes)} (Expected: True)")
++    print(f"is_bytes_sequence_annotation(AliasList): {is_bytes_sequence_annotation(AliasList)} (Expected: False)")
++    
++    # Nested aliases
++    exec("type NestedAlias = AliasList", globals())
++    NestedAlias = globals()['NestedAlias']
++    print(f"field_annotation_is_sequence(NestedAlias): {field_annotation_is_sequence(NestedAlias)} (Expected: True)")
++    
++except Exception as e:
++    print(f"Error: {e}")
