@@ -170,43 +170,51 @@ def legend_row(fig, entries, x, y, *, size=6.8, pad=0.028):
 
 
 def fig_card(snapshot: Snapshot, out: Path) -> None:
-    """The 560x280 Kaggle card: the leaderboard's resolution, in one number."""
+    """The Kaggle card: the leaderboard's resolution, in one number.
+
+    1280x720. The upload form's label says 560x280, but it rejects anything
+    under 640x360; this is 16:9 at twice that, so it stays crisp when the card
+    is shown at full width.
+    """
     by_k, band, band_total, pct = band_around(snapshot)
     ks = sorted(by_k)
-    w_px, h_px, dpi = 560, 280, 100
+    dpi = 200
+    w_in, h_in = 6.4, 3.6
+    w_px, h_px = int(w_in * dpi), int(h_in * dpi)
 
-    fig = plt.figure(figsize=(w_px / dpi, h_px / dpi), dpi=dpi)
+    fig = plt.figure(figsize=(w_in, h_in), dpi=dpi)
     fig.patch.set_facecolor(SURFACE)
 
-    fig.text(0.055, 0.88, "THE LEADERBOARD CANNOT RESOLVE WHAT IS BEING TUNED",
-             color=MUTED, fontsize=6.5, va="center")
-    fig.text(0.055, 0.60, f"{pct}%", color=S1, fontsize=34, fontweight="bold",
+    fig.text(0.055, 0.905, "THE LEADERBOARD CANNOT RESOLVE WHAT IS BEING TUNED",
+             color=MUTED, fontsize=7.5, va="center")
+    fig.text(0.055, 0.635, f"{pct}%", color=S1, fontsize=46, fontweight="bold",
              va="baseline")
-    fig.text(0.055, 0.50, "of the field sits within\none task of our score",
-             color=INK, fontsize=9.5, va="top", linespacing=1.45)
-    fig.text(0.055, 0.285,
+    fig.text(0.055, 0.545, "of the field sits within\none task of our score",
+             color=INK, fontsize=12.5, va="top", linespacing=1.45)
+    fig.text(0.055, 0.315,
              f"{band_total:,} of {snapshot.teams:,} teams\n"
              f"resolved {band[0]}, {band[1]} or {band[2]} of {N_TASKS}",
-             color=INK_2, fontsize=7.5, va="top", linespacing=1.5)
+             color=INK_2, fontsize=9.5, va="top", linespacing=1.5)
 
-    ax = fig.add_axes((0.46, 0.235, 0.50, 0.56))
+    ax = fig.add_axes((0.46, 0.245, 0.50, 0.57))
     ax.set_facecolor(SURFACE)
     ax.set_xlim(ks[0] - 0.7, ks[-1] + 0.7)
     peak = max(by_k.values())
     ax.set_ylim(0, peak * 1.18)
 
     slot_px = (0.50 * w_px) / len(ks)
-    bar_w = min(24.0, slot_px - 2.0) / slot_px  # <=24px thick, 2px surface gap
+    gap_px, cap_px = 2.0 * dpi / 100, 24.0 * dpi / 100
+    bar_w = min(cap_px, slot_px - gap_px) / slot_px  # <=24px thick, 2px gap
     for k in ks:
-        patch = rounded_end(ax, k - bar_w / 2, 0, bar_w, by_k[k], 4.0)
+        patch = rounded_end(ax, k - bar_w / 2, 0, bar_w, by_k[k], 4.0 * dpi / 100)
         patch.set_facecolor(S1 if k in band else FIELD)
 
     for y in (200, 400):
         ax.axhline(y, color=GRID, lw=1, zorder=0)
-        ax.text(ks[0] - 0.85, y, f"{y}", color=MUTED, fontsize=6, va="center", ha="right")
+        ax.text(ks[0] - 0.85, y, f"{y}", color=MUTED, fontsize=8, va="center", ha="right")
 
     # Direct-label the one bar the story is about.
-    ax.text(OUR_K, by_k[OUR_K] + peak * 0.045, "us", color=S1, fontsize=7.5,
+    ax.text(OUR_K, by_k[OUR_K] + peak * 0.045, "us", color=S1, fontsize=10,
             fontweight="bold", ha="center", va="bottom")
 
     strip(ax)
@@ -215,13 +223,13 @@ def fig_card(snapshot: Snapshot, out: Path) -> None:
     ax.spines["bottom"].set_linewidth(1)
     ax.set_xticks([ks[0], 5, 10, ks[-1]])
     ax.set_xticklabels([str(ks[0]), "5", "10", str(ks[-1])])
-    ax.tick_params(axis="x", length=0, pad=3, colors=MUTED, labelsize=6.5)
-    ax.set_xlabel(f"tasks resolved, of {N_TASKS}", color=MUTED, fontsize=7, labelpad=6)
+    ax.tick_params(axis="x", length=0, pad=4, colors=MUTED, labelsize=8.5)
+    ax.set_xlabel(f"tasks resolved, of {N_TASKS}", color=MUTED, fontsize=9, labelpad=8)
 
-    fig.text(0.055, 0.055,
+    fig.text(0.055, 0.065,
              f"Kaggle public leaderboard, {snapshot.captured_utc[:10]}  ·  "
              f"one task = {1 / N_TASKS:.4f}  ·  denominator recovered, not published",
-             color=MUTED, fontsize=6.5, va="center")
+             color=MUTED, fontsize=8, va="center")
 
     fig.savefig(out, facecolor=SURFACE, dpi=dpi)
     print(f"wrote {out.relative_to(ROOT)}  ({w_px}x{h_px})  {band_total:,}/{snapshot.teams:,} = {pct}%")
@@ -326,7 +334,7 @@ def main() -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     snapshot = Snapshot.load(args.snapshot)
 
-    fig_card(snapshot, args.out / "card_560x280.png")
+    fig_card(snapshot, args.out / "card_1280x720.png")
     fig_calibration(args.out / "gallery_1_calibration.png")
     fig_paired(args.out / "gallery_2_paired.png")
     return 0
