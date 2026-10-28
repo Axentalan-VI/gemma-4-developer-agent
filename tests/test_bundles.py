@@ -403,8 +403,43 @@ def _variants_declaring_eval_config():
     return out
 
 
-def test_some_variant_declares_it_so_this_guard_is_live():
-    assert _variants_declaring_eval_config(), "no variant declares ships_eval_config: true"
+def _synthetic_declaring_variant(tmp_path: Path) -> tuple[Path, str]:
+    """A copy of the baseline that declares `ships_eval_config: true`.
+
+    The guard used to be tested only against whichever shipped variants happened
+    to declare the flag, so deleting those variants silently disabled the test
+    rather than failing it -- the exact shape of defect this suite exists to
+    catch. Building the declaring variant here keeps the guard live whatever the
+    bundle set is.
+    """
+    bundles = tmp_path / "bundles"
+    shutil.copytree(BUNDLES, bundles)
+    name = "synthetic_declaring"
+    src = bundles / "v00_public_baseline"
+    dst = bundles / name
+    shutil.copytree(src, dst)
+    man = dst / "MANIFEST.yaml"
+    man.write_text(
+        man.read_text(encoding="utf-8").rstrip("\n") + "\nships_eval_config: true\n",
+        encoding="utf-8",
+    )
+    (dst / "eval_config.yaml").write_text(
+        "evaluation:\n  max_time_minutes: 30\n", encoding="utf-8"
+    )
+    return bundles, name
+
+
+def test_the_guard_refuses_a_declaring_variant_built_without_the_flag(tmp_path):
+    bundles, name = _synthetic_declaring_variant(tmp_path)
+    with pytest.raises(ValueError) as exc:
+        build_bundle(name, bundles, tmp_path / "out", ship_eval_config=False)
+    assert "ships_eval_config" in str(exc.value)
+
+
+def test_the_guard_ships_the_file_when_the_flag_is_given(tmp_path):
+    bundles, name = _synthetic_declaring_variant(tmp_path)
+    res = build_bundle(name, bundles, tmp_path / "out", ship_eval_config=True)
+    assert "eval_config.yaml" in res.files
 
 
 @pytest.mark.parametrize("variant", _variants_declaring_eval_config())

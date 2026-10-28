@@ -50,16 +50,16 @@ sample size.
 ## Running it
 
 ```bash
-python -m pytest                        # 310 passed, 13 skipped
+python -m pytest                        # 292 passed, 12 skipped
 python scripts/analyze_leaderboard.py   # D0, from the committed snapshots
 python scripts/analyze_tasks.py         # task-set shape (needs the task file)
 python scripts/make_paper_figures.py    # regenerates the paper's three figures
 ```
 
-Nine of those 13 skips need `data/tasks/tasks.jsonl` — the competition's own task
+Nine of those 12 skips need `data/tasks/tasks.jsonl` — the competition's own task
 file, which includes its reference patches. **This repository does not
 redistribute the organisers' data.** Download the competition data, place
-`tasks.jsonl` at that path, and the suite reports **320 passed, 3 skipped** —
+`tasks.jsonl` at that path, and the suite reports **301 passed, 3 skipped** —
 the figure the paper cites. Nothing is silently skipped: each skip prints the
 reason and the fix.
 
@@ -71,7 +71,13 @@ which is the point of the paper's reproducibility section.
 
 - **`data/tasks/tasks.jsonl` and the agent traces.** Both carry the
   competition's own content — task statements, repository snapshots and
-  reference patches. Redistributing them is not ours to do.
+  reference patches. Redistributing them is not ours to do. The `.patch` files
+  under `ledger/runs/*/patches/` are a different thing and are included: they
+  are the agent's own output diffs, whose context lines quote only the public,
+  MIT-licensed repositories under test.
+- **Agent configurations that the paper does not cite**, and the operational
+  tooling for running them on Kaggle. The main competition is live until
+  2026-12-02; what is here is what the paper's claims rest on.
 - **Vendored wheels.** 56 MB of ordinary PyPI packages, nothing you cannot fetch.
 - **Working notes and forward plans.** This repository is the paper's evidence,
   not a project journal.
@@ -120,7 +126,8 @@ bundles/           authored agent configurations; each MANIFEST.yaml is a D5
 ledger/runs/       one row per task per run, keyed by bundle_hash
 data/leaderboard/  committed public-leaderboard snapshots (D0's input)
 paper/             the manuscript, the generated submission text, the figures
-kernels/           Kaggle notebook metadata; only these touch a GPU
+kernels/           the two Kaggle notebooks behind cited results: the D1
+                   calibration (CPU-only) and the headline paired run
 EXPERIMENTS.md     per-run record, including the runs that failed
 LESSONS.md         mistakes and their root causes
 ```

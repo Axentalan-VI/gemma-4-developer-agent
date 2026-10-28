@@ -3,7 +3,8 @@
 This is the only script that spends GPU quota, so it is built around three
 constraints:
 
-- **30 GPU-hours a week.** `Evaluator.run()` already has a semaphore worker
+- **45 GPU-hours a week** on this account (not the 30 in Kaggle's public docs;
+  `kaggle quota` is the source of truth). `Evaluator.run()` already has a semaphore worker
   pool, so concurrency is free to use; the wins come from vLLM prefix caching
   (every task shares the system prompt and every turn re-sends the growing
   conversation) and from not re-paying setup per task.

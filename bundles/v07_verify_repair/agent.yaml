@@ -1,8 +1,0 @@
-name: swe_pipeline
-description: >-
-  Two-stage software engineer. An editor fixes by reading, then a verifier fixes
-  by running.
-agent_class: SequentialAgent
-sub_agents:
-  - config_path: sub_agents/fixer.yaml
-  - config_path: sub_agents/verifier.yaml

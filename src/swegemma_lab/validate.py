@@ -6,7 +6,8 @@ grader refuses to load, and therefore scores 0.00, for a reason a five-second
 local check would have found.
 
 Every rule here is traceable to `reference/HARNESS_README.md` or to an observed
-community failure. See `docs/checks.md` for the mapping.
+community failure. Each check names the failure it prevents in its own
+docstring; there is no separate mapping document.
 """
 
 from __future__ import annotations

@@ -71,6 +71,8 @@ collection errors left unclassified, which does not close against the 24: that
 classification was made at an earlier gold pass rate and has not been re-run. We
 report the gap rather than smooth it.
 
+![Gold/null calibration over 129 tasks](https://raw.githubusercontent.com/Axentalan-VI/gemma-4-developer-agent/main/paper/figures/gallery_1_calibration.png)
+
 This floor is not a bug to be fixed. The grader's pinned wheel cache is private
 and the public wheels directory holds only 41 distinct packages, so the
 environment in which those 24 tasks pass cannot be reconstructed. The floor is a
@@ -152,7 +154,7 @@ SE = 0.0000, z = ±∞, and printed SIGNIFICANT for a three-gained / one-lost sp
 whose exact two-sided McNemar p-value is 0.625; the fix is to fall back to the
 discordant pairs. What makes it a finding rather than a bug report is that a
 passing test named `test_deterministic_arms_have_zero_variance` asserted the
-broken behaviour as a feature. The suite passed throughout, and passes at 320
+broken behaviour as a feature. The suite passed throughout, and passes at 301
 tests today. **A test suite cannot catch a wrong statistical contract, because
 the contract is what the tests encode.**
 
@@ -217,6 +219,8 @@ gave **zero discordant pairs**, and so no information at any sample size.
 Without D1 and D2 we would have reported the resolution null; without D0 and D4,
 neither, never having sized the run. The protocol did not make our agent better;
 it told us which of our two numbers to believe.
+
+![Four metrics, two arms, 36 paired tasks](https://raw.githubusercontent.com/Axentalan-VI/gemma-4-developer-agent/main/paper/figures/gallery_2_paired.png)
 
 ## Generalization
 
@@ -313,7 +317,7 @@ The repository carries the protocol, not just its outputs. Every bundle has a
 content hash, so byte-identity across runs is checkable rather than asserted,
 and the ledger holds one row per task per run—so almost every figure here is
 re-derivable without rerunning anything. The exception is the mismatch rate,
-whose raw pytest output is not committed. The statistical machinery has 320
+whose raw pytest output is not committed. The statistical machinery has 301
 passing tests, including the ones that now assert the two contracts we got
 wrong.
 
