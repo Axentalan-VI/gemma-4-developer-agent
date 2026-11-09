@@ -3782,7 +3782,19 @@ stratum and does nothing on the long one.
 
 ---
 
-## P021 RESULT — the starlette blocker is gone, and the candidate fix is harmful (2026-11-09, 0 GPU-h, CPU-only)
+## P021 RESULT — the candidate venv fix is harmful (2026-11-09, 0 GPU-h, CPU-only)
+
+> **CORRECTED the same day by P022 — see the end of this file.** This entry's
+> headline claim, that the starlette blocker had expired, is **withdrawn**. It
+> rested on 8 fastapi tasks taken as `[:8]`, which is the head of a list ordered
+> with the working tasks in front: positions 0-12 all pass and only 3 of the
+> remaining 54 do. Over all 67, gold resolves **16** and **48 failures carry the
+> original `Router.__init__() ... 'on_startup'` TypeError**. The blocker is
+> intact.
+>
+> **What stands:** arm B. `--venv-mode shadow` really is destructive (0/8 where
+> the default scores 8/8), for the `requests.py` shadowing reason below, and the
+> plan to wire it into `session_runner.py` is still correctly cancelled.
 
 `kernels/19_venv_probe`, pushed as kernel version 3 and run to COMPLETE in ~9
 minutes of compute on a 4-CPU kernel. **Zero GPU quota.** Three arms, gold
@@ -3942,3 +3954,97 @@ commands proves it). A single `git log` call costing 324 s was misread off that
 field; no per-call wall cost is available from these traces.
 
 **Cost:** 0 GPU-h, on data already banked.
+
+---
+
+## P022 RESULT — fastapi is still broken, and P021's 8/8 was the head of a sorted list (2026-11-09, 0 GPU-h, CPU-only)
+
+Kernel 29, pushed and run to COMPLETE in ~21 minutes on 4 CPUs. **Zero GPU
+quota.** Gold and null over **all 67** fastapi tasks, `--venv-mode inherit`,
+then `calibrate.py --reconcile`.
+
+**This entry corrects P021's headline. Read it before acting on that one.**
+
+### The result
+
+| | |
+|---|---|
+| fastapi tasks | 67 |
+| **gold resolved** | **16** |
+| null resolved | 1 (`fastapi_14873` passes with no patch at all) |
+| **gradeable** | **15** |
+| C004 prior (2026-10-01) | 62/67 |
+| P021 prior (same day, 8 tasks) | 8/8 |
+
+**The blocker never went away.** Of the 51 gold failures, **48 carry the exact
+old signature** — `TypeError: Router.__init__() got an unexpected keyword
+argument 'on_startup'`, with 32 of them failing during collection. This is the
+same starlette/fastapi mismatch that took fastapi out of the measurable set, and
+it is intact.
+
+### Why P021 said the opposite, and it is not a measurement error
+
+P021 measured 8 fastapi tasks at 8/8 and concluded the blocker had expired. Every
+one of those 8 tasks **still gold-passes here**, so the measurement was correct.
+The inference was not, because of how the 8 were chosen:
+
+```python
+tasks = [t for t in load_tasks(...) if t.repo.endswith('fastapi')][:8]
+```
+
+Positions of the gold-passing tasks in file order:
+
+```
+0 1 2 3 4 5 6 7 8 9 10 11 12 … 22 … 53 … 63
+```
+
+**The first 13 tasks in list order all pass, and only 3 of the remaining 54 do.**
+`[:8]` landed entirely inside that block. The slice was not a sample of the
+population; it was the head of a list that happens to be ordered with the
+working tasks in front. A random 8 would have returned about 2/8 and the
+conclusion would have been the right one.
+
+So P021's arm A is still a valid *finding about those 8 tasks*, and its arm B
+result stands untouched and still matters — `shadow` mode really is destructive,
+and the `requests.py` shadowing mechanism is real. **Only its generalisation to
+"the blocker expired" is withdrawn.**
+
+### What does not explain it
+
+The stack moved between the two runs on the same day — **starlette 1.6.0 →
+1.9.0**, image `sha256:17b2fc7f…` → `sha256:0717e819…`, Python 3.13.15 →
+3.13.18, four hours apart. That is worth recording on its own (no pin of ours
+freezes either the wheelhouse or a CPU kernel's image), but it is **not** the
+cause here: P021's 8 tasks pass under both versions. The difference is the
+sample, not the environment.
+
+### What this is worth anyway
+
+Not the tripling the kernel was pushed to test. But 15 gradeable fastapi tasks
+restore something the protocol has wanted all along and has not had: **a
+separate tuning split.** The design says tune on fastapi, confirm on rich, and
+since 2026-10-29 every run has been rich-only, so tuning and confirmation have
+been the same 39 tasks.
+
+| list | n | detectable delta, k=1 |
+|---|---|---|
+| `rich_clean39` | 39 | 0.1158 |
+| pooled 39 + 15 | 54 | ~0.098 |
+
+The pooled figure is a modest gain; the **structural** gain is being able to
+tune on one repo and confirm on another, which is what the generalisation guard
+in `README.md` asks for and could not be satisfied.
+
+### What to do
+
+1. **Keep `rich_clean39` as the primary list.** fastapi is not measurable at
+   scale and this closes that question with a number rather than a hope.
+2. **Freeze the 15 as `fastapi_clean15`** and use it as the tuning split, with
+   rich as confirmation. Do not pool them into one headline figure without
+   saying so: 48 of 67 fastapi tasks are excluded by a dependency fault, which
+   is a different censoring mechanism from anything in the rich list.
+3. **Do not re-test the starlette fix.** P021's arm B already showed `shadow`
+   takes a working 8/8 to 0/8. The 48 failures are not fixable from our side:
+   the grader's pinned wheel cache is private.
+
+**Cost:** 0 GPU-h, ~21 min wall, median 9.4 s per gold task.
