@@ -114,7 +114,7 @@ risks:
     EXPERIMENTS.md "T008".
 
 notes: >
-  This is a deliberate single-knob experiment, which this project's CLAUDE.md
+  This is a deliberate single-knob experiment, which this project's the project brief
   normally forbids on cost grounds. The exception is justified because the knob
   is not prompt text and the mechanism is specific: grouping it with other
   changes would make a flat result uninterpretable, and T007 licenses the timing

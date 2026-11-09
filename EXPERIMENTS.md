@@ -106,7 +106,7 @@ a large throughput lever.
 
 The section above read the ledger. This one reads the **structured `tool_calls`
 field** in the same twelve traces, which the first version of
-`scripts/analyze_traces.py` could not see (see `LESSONS.md`). It changes the
+`scripts/analyze_traces.py` could not see (see the project's working notes). It changes the
 diagnosis, so the section above is kept but is no longer the operative read.
 
 **The read-only `code_analyzer` sub-agent consumes most of the call budget.**
@@ -254,7 +254,7 @@ get the same cap and the comparison is paired, so it cannot favour either arm.
 
 **Confound, stated plainly.** v03 contains v02's sampling ceilings *and* the
 budget-guard prompts, so a v00-vs-v03 delta cannot be attributed to either alone.
-This is the project's standing whole-bundle-A/B policy (project `CLAUDE.md`,
+This is the project's standing whole-bundle-A/B policy (the project brief,
 "Deliberate deviations"), accepted because a single-knob run costs the same GPU
 hours and would land inside the noise.
 
@@ -342,7 +342,7 @@ run looks like from the CLI, and the only measuring mode is **interactive**.
 cost 14 seconds. The preflight assert — written for the T4 failure a day earlier —
 is what kept attempt 3 from costing an allocation.
 
-**Corrected:** `CLAUDE.md`'s hardware table said "T4x2 dead, L4 gives Python 3.12".
+**Corrected:** the project brief's hardware table said "T4x2 dead, L4 gives Python 3.12".
 The wrong half was load-bearing, because it made batch-on-L4 look safe. The table
 now splits L4x4 by execution mode, and the preflight assert's own message says to
 run interactively and why.
@@ -411,7 +411,7 @@ downloads `torch-2.10.0+cu128-cp313` (917 MB, confirmed present) plus its pinned
 `nvidia-*` deps, and the GPU kernel consumes that kernel's output via
 `kernel_sources`. This costs no GPU quota and no local bandwidth. Internet is only
 forbidden *with the premium accelerator*, which is exactly why the split works —
-the pattern this project's `CLAUDE.md` already prescribed.
+the pattern the project brief already prescribed.
 
 First attempt at the fetch failed cleanly and cost nothing: `--index-url` pointed
 only at the PyTorch index, where the `nvidia-*` deps do not exist, so pip resolved
@@ -565,7 +565,7 @@ exactly what `start_server()` imports, and on failure retries each import alone
 so the log names the API that moved. Cost of the lesson: 0.23 GPU-h, versus the
 0.76 GPU-h the same class of mistake cost on 2026-10-07.
 
-**What this invalidates.** `CLAUDE.md` asserted the wheelhouse was "built
+**What this invalidates.** the project brief asserted the wheelhouse was "built
 2026-09-30, never updated". That is false as of 2026-10-09 and has been
 corrected. More importantly the environment-pinning note said pinning makes the
 stack "stop moving between arms" -- it pins the *image*, and the wheelhouse is a
@@ -602,7 +602,7 @@ Pre-registered reading, before the result is known:
 - **0/12 with wall times well under 60 min** → the cap was *not* the culprit, and
   `probe_c12`'s 2/12 is the observation needing explanation. Do not buy E003.
 
-Deviation from HANDOFF.md step 3's cost note: it proposed pricing this off v03's
+Deviation from the project's working notes, step 3's cost note: it proposed pricing this off v03's
 7.8 min/task-arm for ~1.6 GPU-h, but the arm run is **v00**, whose measured mean
 is 24.4 min. v00 was chosen anyway because it is the arm the 0.13 leaderboard
 number belongs to, so a non-zero result here is comparable to something.
@@ -649,7 +649,7 @@ Do not drop the assertion while porting.
 
 **Also worth noting:** `adk_submission.discovery` exposes `discover_skills` and a
 `SkillRegistry`, which bears on the long-open question of whether `skills/`
-actually loads (PLAN.md E10). Not pursued here.
+actually loads (project plan E10). Not pursued here.
 
 **Method note, recorded because it generalises:** searching for the symbol by
 name returned nothing and would have ended the investigation at "it is gone".
@@ -667,7 +667,7 @@ already in this file**.
 **The defect.** `stats.decide` ships a bundle only on a significant positive
 resolution delta. At the `k` this project can afford, that condition is
 unreachable: the single-run paired SE is ~0.030, so the smallest detectable delta
-is 0.064 at k=1 and 0.045 at k=2, against `PLAN.md`'s design target of 0.05. A
+is 0.064 at k=1 and 0.045 at k=2, against the project plan's design target of 0.05. A
 rule whose only reachable output is HOLD is not conservative, it is **vacuous** —
 and worse, it prints the same word for two incompatible findings:
 
@@ -824,7 +824,7 @@ the re-issue rate). It is also reproduced across runs — `probe_c12` recorded 4
 created-file and 4/12 scratch-leak — so unlike the rate metrics, this is not n=12
 noise. It is a stable mechanism.
 
-**THE GATE FIRES AGAINST BUYING k=4.** HANDOFF step 3 said: *"Do not run anything
+**THE GATE FIRES AGAINST BUYING k=4.** the project's working notes, step 3 said: *"Do not run anything
 else until this returns a non-zero resolution, because a rig that resolves
 nothing cannot rank bundles."* It returned zero. **Therefore do not buy the k=4
 resolution reference.** The money question is no longer "which bundle is better"
@@ -1028,7 +1028,7 @@ caps and pinned image, with the wheelhouse checked at `lastUpdated 2026-10-09
 **It was abandoned at launch.** Re-checking on 2026-10-13 showed the wheelhouse
 **republished 2026-10-12 19:51:31**, hours after the check cleared it — the
 third republication of this competition. Pairing across it would have been
-confounded invisibly. Same-session arms cannot be. See `LESSONS.md`.
+confounded invisibly. Same-session arms cannot be. See the project's working notes.
 
 A CPU re-probe (`kernels/13_harness_api`, **0 GPU-h**, run 09:17:19) confirms
 the republication did **not** move the harness API: `swegemma-0.2.11` and
@@ -1106,7 +1106,7 @@ which validates the pre-run arithmetic (`se_unit` ≈ 0.098 on 12 tasks).
 would have read 0.417 vs 0.250 = +0.167 and looked like a promising effect.** It
 is noise. The extra ~2 GPU-h bought the correct answer instead of a false
 positive, which is the strongest available argument for never pairing across
-sessions. See `LESSONS.md` 2026-10-13.
+sessions. See the project's working notes 2026-10-13.
 
 ## T004 — the grader's denominator, read off the public leaderboard (2026-10-13, 0 GPU-h)
 
@@ -1116,14 +1116,14 @@ files had not been re-read since **2026-09-30** — and all four were wrong.
 
 ### What was stale
 
-| Claim carried in `PLAN.md`, `README.md`, `PROGRESS.md`, `CLAUDE.md`, `paper/OUTLINE.md` | Live value, 2026-10-13 |
+| Claim carried in the project plan, `README.md`, the progress log, the project brief, the paper outline | Live value, 2026-10-13 |
 |---|---|
 | Top of leaderboard **0.17** | **0.24** (2 teams) |
 | **1037** teams | **2643** teams |
 | **~19** teams tied with us at 0.13 | **340** |
 | Private set **~60** tasks, one task = 0.0167 | **58** tasks, one task = **0.0172** |
 | "the whole visible board is about **4 tasks** wide" | the board spans **14 tasks**; the *mode* is ~1 task wide |
-| "**Four** submissions scored" (`PROGRESS.md`) | **three** — 0.13, 0.08, 0.10 |
+| "**Four** submissions scored" (the progress log) | **three** — 0.13, 0.08, 0.10 |
 
 Our row: `Ahmed_Sherif382`, rank **785 of 2643**, score **0.13**, 3 submissions,
 last 2026-10-07. Source: `kaggle competitions leaderboard ... --download`,
@@ -1200,7 +1200,7 @@ than a fixture). Suite 213 → 223, and → **227** once v06 existed, because
 ## T005 — v00 is wall-clock bound in the current environment (2026-10-13, 0 GPU-h)
 
 Found while re-reading P006's ledger rows per task rather than as a summary.
-**It contradicts what `HANDOFF.md` and `PROGRESS.md` both said**, which was that
+**It contradicts what the project's working notes and the progress log both said**, which was that
 the 60-minute cap never binds.
 
 | Run | Bundle | Median wall | Max wall | Tasks ≥59.5 min | Tasks at 100 calls | Wheelhouse |
@@ -1218,7 +1218,7 @@ simultaneously. **It is not a bundle change** — `analyzer_v00` and
 
 **What it most likely is:** the 2026-10-12 19:51:31 wheelhouse republication sits
 between the two runs, and summed task wall went 287.7 → 636.5 min, a **2.3×
-slowdown on identical bytes.** This is the confound `CLAUDE.md` already warns
+slowdown on identical bytes.** This is the confound the project brief already warns
 about, now with a measured magnitude.
 
 ### Why it matters beyond bookkeeping
@@ -1479,7 +1479,7 @@ deaths. The right risk was wall clock, and it was listed second.
 ## E012-LB — v05_no_analyzer on the private set (attempted 2026-10-14, DEFERRED)
 
 **Not submitted. `400 Bad Request`, cause narrowed to the 24 h window or the
-`PENDING` v06 — see `LESSONS.md` 2026-10-14.** Packaging was verified sound
+`PENDING` v06 — see the project's working notes 2026-10-14.** Packaging was verified sound
 (validator PASS, round-trip PASS, correct filename, `testzip()` clean) and
 nothing registered server-side.
 
@@ -1906,7 +1906,7 @@ with 0.00 h drawn for the first ~7 minutes, which is normal allocation latency
 rather than the self-block failure mode.
 
 Expected finish ~21:00 UTC (5.8 h). **A watcher is polling for the terminal
-state, because the last run's output sat unread for five days** — see LESSONS.md
+state, because the last run's output sat unread for five days** — see the project's working notes
 2026-10-19. Fetch with `kaggle kernels output ahmedsherif382/swegemma-clamp-ab`
 the moment it is terminal; a batch run commits `/kaggle/working` even on ERROR,
 so an errored run is still worth fetching.
@@ -1925,7 +1925,7 @@ blocked on E015.
 `surrogate: false`. Banked at `ledger/runs/clamp_v0{0,8}/`.
 
 **Cost 10.57 GPU-h against a ~6 GPU-h estimate — a 1.76× overrun.** 34.43 h
-remain of the window expiring 2026-10-24. See LESSONS.md.
+remain of the window expiring 2026-10-24. See the project's working notes.
 
 #### Outcomes, paired within this session
 
@@ -2228,7 +2228,7 @@ bytes before escalating.**
 
 Five-advisor LLM council on "is the current architecture worth improving".
 Unanimous verdict: "the failure is verification, add a verify gate."
-**The fact-check refuted the unanimity.** Full detail in `HANDOFF.md` §2.
+**The fact-check refuted the unanimity.** Full detail in the project's working notes §2.
 
 Refuted, each against a live source:
 
@@ -2534,12 +2534,12 @@ each verified before it was applied:
 | 9 | "every figure is re-derivable" (§H) | `clamp_*`/`cap60_*` carry **no** `patches/` or test logs | `ledger/runs/` |
 | 10 | four smaller: v01's "eleven prompt edits"; v04 "exactly between"; §G's ~0.24; §D1's "bought nothing" | not all prompt edits; 6 vs 8 and 5; **0.209**; the second identical run *is* the one that produced the diagnosis | E002, E004, `detectable_delta`, C003 |
 
-Two of these are recorded in `LESSONS.md` as mistakes rather than edits: #2 and
+Two of these are recorded in the project's working notes as mistakes rather than edits: #2 and
 #1. #2 is the serious one — a measurement-discipline paper misreporting its own
 pre-registration, written in the very section that describes pre-registration.
 
 The one-sided 0.3125 was **repo-wide**, not just in the paper: 7 occurrences
-across `LESSONS.md` (1), `paper/OUTLINE.md` (3), `src/swegemma_lab/stats.py` (1)
+across the project's working notes (1), the paper outline (3), `src/swegemma_lab/stats.py` (1)
 and `tests/test_stats.py` (2). All corrected to 0.625 in the same pass, with the
 provenance recorded at the canonical source, so the repo and the paper now agree.
 None was an assertion, and the suite is unchanged at **302 passed, 3 skipped**.
@@ -2581,10 +2581,1364 @@ says to re-run before submitting. Writing these tests moved the suite 302 → 31
 which immediately invalidated the paper's "302 passing tests" in two places — a
 small live demonstration of the drift the paper is about. Now 314 everywhere.
 
-Also corrected this session: `paper/OUTLINE.md`'s "1,012 of 2643 teams — 38%"
+Also corrected this session: the paper outline's "1,012 of 2643 teams — 38%"
 band, whose own components sum to **1,026** (353 + 340 + 333) on the 2026-10-13
 snapshot, and whose 2,643 is the *scored* field — 150 sit at 0.00, so positive
 scorers are 2,493. The manuscript supersedes that paragraph anyway, reporting the
 2026-10-19 board at 1,094 of 3,199 = 34%.
 
 Suite: **314 passed, 3 skipped.**
+
+### PAPER — submitted (2026-10-28, 0 GPU-h)
+
+The Paper Track Writeup is **submitted**, not saved as a draft — the overview is
+explicit that "any un-submitted or draft Writeups by the competition deadline
+will not be considered by the Judges". Edits remain open until 2026-11-12 23:59
+UTC.
+
+| field | value |
+|---|---|
+| title | Calibrate the Yardstick First: Measurement Discipline for Agentic SWE Benchmarks |
+| body | `paper/SUBMISSION.md`, generated from the manuscript by `scripts/export_paper.py` |
+| card | `paper/figures/card_560x280.png` |
+| gallery | `paper/figures/gallery_1_calibration.png`, `gallery_2_paired.png` |
+| project link | <https://github.com/Axentalan-VI/gemma-4-developer-agent> (public, 229 files, one commit) |
+| licence | CC BY 4.0 |
+
+**Known defect in the submitted text:** the pasted copy predates the 314 → 320
+suite-size correction, so §D3 and §H both still read 314 while the linked repo
+reports 320 with the competition data and 310 without. Correctable in the Kaggle
+editor until the deadline. Worth noting that this is exactly the failure the
+paper describes — a figure that tracks the repository, going stale between
+writing and publication — and the guard added this session
+(`test_the_paper_states_one_suite_size_consistently`) only checks the paper
+against *itself*, so it could not catch a stale *paste*.
+
+The published repository is a curated export, not the working repo: no
+`results/` (agent traces embed the organisers' problem statements), no
+`vendor/` (56 MB of PyPI wheels), no internal working notes. Rebuild it with
+`git archive HEAD <paths>` — see the commit message on `bb0b0f7` in that repo.
+
+### E016 / T012 — v10 blanked, and the cause was never ours (2026-10-28, 0 GPU-h)
+
+`v10_clamp_timecap`, ref **57693514**, submitted 2026-10-27 07:35, returned
+**COMPLETE with a blank score** -- the fifth consecutive blank. The pre-registered
+branch in `bundles/v10_clamp_timecap/MANIFEST.yaml:79-86` said a fifth blank means
+escalate rather than ship a third cap variation. It fired, and the escalation
+found the answer immediately.
+
+**The cause is a Kaggle-side scoring failure, acknowledged in public by the
+competition host:**
+
+> "This looks like a failure on our side. We're investigating the root cause and
+> will rerun any submissions that failed on account of it."
+> -- ryanholbrook, pinned in competition discussion **751339**, ~2026-10-22
+
+Read from the thread directly on 2026-10-28, not from a search summary. At least
+five other entrants report our exact signature -- a byte-identical archive that
+scored earlier, then COMPLETE with an empty score -- with their own refs:
+57479824, 57464948/57503836, 57521679, 57541670, 57480512. One of them
+(57480512) reports the identical archive **scoring** on resubmission as 57506125.
+Kaggle Staff separately documented a queue bug marking submissions failed after
+waits over 15 h **even when they ran** (discussion 747519), and the same pinned
+notice appears on ARC Prize 2026, so it is platform-wide.
+
+**So T010's reading -- notebook timeout caused by the wheelhouse republication --
+is wrong, and `v09_timecap` and `v10_clamp_timecap` were fixes for a problem this
+project never had.** Two submission slots. The disconfirming evidence was already
+in hand: the byte-identical **v00 control** (57430290) blanked on 2026-10-20,
+which exonerates every property of every bundle. That was read as "the
+environment changed" and then resolved to the one environment change we had
+measured ourselves. The competition forum was never checked. Recorded in
+the project's working notes.
+
+**Three corrections to this file's own earlier entries, from a re-audit of the
+run data:**
+
+1. **The boundary attribution was over-precise.** `:2095` asserts the boundary is
+   the 2026-10-12 19:51:31 republication. The actual submission boundary is
+   2026-10-07 (v04, scored 0.10) to 2026-10-13 (v06, blank), a six-day window
+   containing **three** candidate events: the 2026-10-09 14:43 republication, the
+   2026-10-12 19:51 one, and the Kaggle base-image roll to Python 3.13. And v00
+   scored 0.13 on 2026-09-30 under a wheelhouse earlier than any of them.
+2. **The leaderboard contradicts a grader-wide slowdown, and we had the data.**
+   Both committed snapshots post-date 2026-10-12: teams went **2,643 -> 3,199**
+   and the mass at >= 0.18 went **179 -> 501** in six days. Re-derived from
+   `data/leaderboard/` on 2026-10-28. A grader too slow to finish a 58-task run
+   does not produce 556 first-time scorers in the same window. This was used only
+   to argue "the grader is healthy, so it must be us" and never turned around.
+3. **"2.3x" is the ratio of upper medians on n=12**, censored at the cap on 6 of
+   12 post rows, single bundle, one pair of runs, and it times *total* per-task
+   duration rather than agent time. The summed ratio is 2.21 and the true-median
+   ratio 2.37. Solid about our rig on those 12 tasks; **not demonstrated for the
+   grader**, which is where it was applied.
+
+**Also corrected:** `bundles/v10_clamp_timecap/eval_config.yaml` claimed the
+bundle was otherwise byte-identical to v00. It is not -- it carries v08's
+`thinking_budget: 1024`. The comment was copied from v09.
+
+**One open mechanical question, now moot for diagnosis but still unanswered:**
+no file among the 513 captured harness sources reads `eval_config.yaml`. The only
+documented reader is `load_submission_eval_config()` in the unshipped private
+`scripts/inference.py`. So whether the grader honours a declared budget at all
+has never been observed, and the `turns` field is `0` on every ledger row of
+every run, so no realised budget has ever been read back either.
+
+**Next action is a forum post, not a submission.** Build nothing for this.
+
+## P010 — the shadow probe measured one arm of three, and arm A refuted the premise (2026-10-29, 0 GPU-h)
+
+CPU-only, `kernels/19_venv_probe`, 8 fastapi tasks per arm, gold mode.
+Wheelhouse `lastUpdated` **2026-10-12 19:51:31** (re-verified the same hour).
+Image `gcr.io/kaggle-images/python@sha256:17b2fc7f...`, **Python 3.13.15**.
+
+| arm | venv mode | gold passed | rc | seconds |
+|---|---|---|---|---|
+| A | `inherit` (today's default) | **8/8** | 0 | 100 |
+| B | `shadow` | 0/0 — **did not run** | 1 | 17 |
+| C | `isolated` | 0/0 — **did not run** | 1 | 17 |
+
+**Arms B and C never constructed.** Both died on
+`ModuleNotFoundError: No module named 'swegemma.subprocess'`; the harness imports
+`SubprocessManager` from `swegemma.sandbox` (`swegemma/evaluate.py:36-40`). The
+preflight checks four symbols, all of which passed, and the shadow path needs a
+fifth. Fixed in `calibrate.py`, and that fifth symbol is now in the gate.
+**The shadow hypothesis remains untested** — this run says nothing about it.
+`the project's working notes 2026-10-29` has the root cause.
+
+**Arm A is the result, and it is not the one expected.** 8 of 8 fastapi gold
+patches resolved, in 100 s, with `starlette 1.6.0` and `fastapi 0.141.1`
+installed. The `Router.__init__() got an unexpected keyword argument 'on_startup'`
+failure **did not occur once** — against 26 of 34 (76%) in the `cap60_v00` GPU
+logs.
+
+### The candidate explanation, and it is about the rig, not the tasks
+
+The two environments are not the same, and the difference is internet:
+
+| | CPU calibration kernel | GPU eval kernel |
+|---|---|---|
+| internet | **yes** | **no** — this competition refuses it with the L4 |
+| test deps | `stage_test_deps.py`: 41 declared names + 7 supplementary, **from PyPI, transitively resolved** | `inline_snapshot` + `dirty_equals` only, offline from `vendor/test_deps`, `--no-deps` |
+
+C004 defined `clean_n = 102` in the **left** column. Every GPU measurement has
+been graded in the **right** one. So the denominator was calibrated on a richer
+environment than the one that grades the runs — the instrument calibrated on a
+different instrument, which is this project's own thesis pointed at itself.
+
+If that holds, **the fix is not venv shadowing.** It is vendoring the resolved
+dependency set so the offline GPU install reproduces what PyPI resolution
+produces — the pattern `kernels/12_fetch_torch` already uses for torch.
+
+**Not yet confirmed.** 8 tasks, chosen as the first 8 fastapi by load order, is
+not 67. The confirmation is gold over all 67 fastapi on a CPU kernel: 8 took
+100 s, so 67 is ~15 min at 0 GPU-h. Until that runs, "fastapi is gradeable" is a
+hypothesis with 8 supporting rows, not a result — and the three-week-old claim
+that the metric is broken is **also** now unsupported on CPU.
+
+## STRATEGY — a $10,000 prize nobody here had read the rules for (2026-10-29, 0 GPU-h)
+
+Verified live. The competition overview carries **"Bonus Prize: Small Model
+Development: $10,000"**, awarded to the **highest-ranking** submission using
+**Gemma E2B or E4B**, which must be one of the team's two final picks.
+
+The host maintains `ryanholbrook/gemma-4-developer-agent-small-model-leaderboard`,
+updated daily, last run 2026-10-28 23:57. Pulled:
+
+| | small-model board | main board |
+|---|---|---|
+| teams | **311** | **4,088** |
+| leader | **0.10** (3 tied) | 0.24 |
+| modal score | **0.08** | — |
+| our standing | never entered | 0.13, rank 2,177 |
+| prize at the top | **$10,000** | $37,000 (3rd = $10,000) |
+
+**The same $10,000 as main-track 3rd place, at a bar of 0.10 against a
+thirteenth of the field**, and our `v00` already scores 0.13 on the 31B.
+
+Feasibility verified rather than assumed: `gemma-4-e4b-it`/`gemma-4-e2b-it` are
+registered harness aliases (`discovery.py:31-32`, `HARNESS_README.md:195`); the
+weights mount at `google/gemma-4/transformers/gemma-4-e4b-it` (id 619374) and
+`.../gemma-4-e2b-it` (id 619384), framework **transformers** not the `other` the
+31B QAT uses; a bundle declares its model on **one line** (`agent.yaml:2`).
+
+**And E4B is 4B-class, so it does not need L4x4.** The hardware constraint that
+has shaped every decision in this project — the hardware table in the project brief — applies to
+the 31B and not to this. Measurement gets cheap enough to run properly.
+
+Three caveats, recorded before any run so they cannot be forgotten afterwards:
+1. A 4B model **will** score below the 31B on the same bundle; the field sitting
+   at 0.08–0.10 is exactly that effect. The claim is "the bar is lower", not "we
+   have won".
+2. 0.10 → 0.12 is **one task**, and identical bytes have scored 0.12/0.13/0.15.
+   Ties break by earliest submission and three teams already hold 0.10, so a
+   one-task edge is worth nothing.
+3. It consumes one of two final picks — which, at rank 2,177, costs ~nothing.
+
+**First step is a measurement, not a submission**: `v00` on E4B, locally, on
+hardware that can now afford a real paired run.
+
+## P011 RESULT — rich is a working measurement surface, 39/48 (2026-10-29, 0 GPU-h)
+
+CPU-only, `kernels/20_rich_calibration`, **all 48** rich tasks, gold then null,
+`--venv-mode inherit`. Wheelhouse `lastUpdated` **2026-10-12 19:51:31**. Image
+Python **3.13.15** with the `vendor/cp313` overlay (41 wheels, 0 unresolved).
+
+| mode | as expected | runtime |
+|---|---|---|
+| gold (every task MUST resolve) | **39/48** | 294 s |
+| null (every task MUST fail) | **48/48** | 1,049 s |
+| **gradeable (gold ∧ ¬null)** | **39** | — |
+
+**Null is perfect: 0 of 48 resolve with an empty patch.** No free points, so the
+intersection loses nothing beyond gold's nine. `--reconcile` wrote the list;
+frozen as `data/tasks/rich_clean39.txt`.
+
+### Not one of the nine is an environment fault
+
+Checked explicitly: **no `on_startup`, no `Router.__init__`, no collection
+error** anywhere in the 48 rows. The starlette/fastapi fault that makes 76% of
+`cap60_v00` rows ungradeable **does not touch rich at all**, as predicted. All
+nine are genuine assertion failures, and they cluster:
+
+| tasks | failing test | likely cause |
+|---|---|---|
+| 4 | `test_markdown.py::test_inline_code` | markdown renderer version |
+| 3 | `test_syntax.py::test_syntax_highlight_ranges` (+ `option_no_wrap`) | **Pygments** — already a known cause in this project |
+| 1 | `test_pretty.py::test_attrs_broken_310` | `attrs` version |
+| 1 | `rich_3486`: **exit 0**, 20 passed 1 skipped, still unresolved | a required test was **skipped**, so exit 0 was not sufficient |
+
+That is the README's "dependency version drift floor", now itemised rather than
+estimated — and three of the four clusters are a single pinned package away from
+being recoverable, which was never known before.
+
+### What this buys, quantitatively
+
+`clean_n`'s rich half was **42** on 2026-10-01; it is **39** now. So the
+republication cost three tasks: `clean_n` was stale, but only mildly, and the
+drift is far smaller than the fastapi fault made it look.
+
+The real gain is **effective** sample size per GPU-hour:
+
+| surface | tasks | gradeable | effective n |
+|---|---|---|---|
+| `clean_dev36` (every run to date) | 36 | ~24% | **~9** |
+| `rich_clean39` | 39 | **100%** | **39** |
+
+**~4.3x more information for the same wall clock**, because the rows that come
+back can actually be graded. P009's `resolved` arm had **zero discordant pairs**
+at 36 tasks; that is what ~9 effective rows looks like.
+
+### Operational finding worth more than it looks
+
+The notebook finished at **09:36:50** by its own log. `kernels status` reported
+`RUNNING` for roughly **an hour** afterwards while Kaggle committed the outputs
+(96 trace JSONs plus directories). **Status is not progress** — read the log's
+own timestamps. A run that looks hung may be finished, and the earlier habit of
+waiting on status wasted most of an hour here.
+
+### Correction, 2026-10-29: what the 4.3x does and does not buy
+
+The table above is right about **effective rows** and was then used to imply
+something false: that a better surface makes a powered A/B cheaper. It does not.
+See S002 below — power per GPU-hour is a constant, and what `rich_clean39`
+bought was the removal of **dead rows**, not sensitivity per hour. The remaining
+value of a fastapi repair is **generality**, not power.
+
+---
+
+## S002 — statistical power costs the same however you buy it (2026-10-29, 0 GPU-h)
+
+Pricing the decode A/B on `rich_clean39` produced a result that kills the plan
+it was meant to cost out.
+
+Detectable delta goes as `1/sqrt(n·k)`; cost goes as `n·k`. So **power per
+GPU-hour is constant**, and trading tasks against replicates is not a choice at
+all. At the measured 0.17 GPU-h per task-arm row (P005 2.02/12, P006 4.35/24):
+
+| surface | n | k | detectable | powered vs 0.05? | cost |
+|---|---|---|---|---|---|
+| `rich_clean39` | 39 | 2 | 0.073 | no | 27 h |
+| `rich_clean39` | 39 | 4 | 0.052 | just misses | 53 h |
+| `rich_clean39` | 39 | **5** | 0.046 | **yes** | **66 h** |
+| rich + fastapi repaired | 99 | **2** | 0.046 | **yes** | **67 h** |
+
+Both rows reaching the design target cost the same ~66 GPU-h. Against ~45
+GPU-h/week and five windows to 2026-12-02, that is **four such experiments in
+the whole remaining project**, after nine consecutive nulls on `resolved`.
+
+### The part that makes even 66 h optimistic
+
+`stats.detectable_delta` keys on `n` and `k` and **knows nothing about the base
+rate**. McNemar reads only the tasks that **flip** between arms. P007 measured
+resolved **3/60 vs 3/60 with zero discordant pairs** — a design with no
+discordant pairs has **no power at any k**, so the table above is an upper bound
+on sensitivity, not an estimate of it.
+
+`v11_greedy`'s MANIFEST already stated this conclusion in plain words — *"NO
+AFFORDABLE LOCAL DESIGN CAN ADJUDICATE `resolved` AT THIS BASE RATE"* — and a 27
+GPU-h k=2 run was priced anyway before that paragraph was re-read.
+
+**Consequence, and it is the live decision:** the base rate on `rich_clean39` has
+never been measured, because every resolution figure this project owns comes from
+fastapi where ~76% of rows are ungradeable. So the next purchase is a **one-arm
+level**, not a comparison — `kernels/21_baserate_rich`, ~2.5 GPU-h, launched
+2026-10-29 12:40 UTC. Levels are legitimately readable at k=1
+(see the note at the P005 entry); comparisons never are.
+
+---
+
+## T012 — the competition permits four base models, not one (2026-10-29, 0 GPU-h)
+
+`build_bundle.py --variant v12_e4b` failed the validator with *"competition
+scoring requires 'gemma-4-31b-it-qat-w4a16-ct'"*. The validator was wrong.
+
+The competition's own Model Selection rules (overview/prizes, read live
+2026-10-29) permit **four** base models, all QAT W4A16:
+
+    gemma-4-31b-it-qat-w4a16-ct     gemma-4-e4b-it-qat-w4a16-ct
+    gemma-4-12b-it-qat-w4a16-ct     gemma-4-e2b-it-qat-w4a16-ct
+
+All three non-31B instances are mountable, framework `OTHER` and W4A16 exactly
+like the 31B, so the serving path is unchanged: **e4b 10.75 GB, e2b 7.78 GB,
+12b 9.59 GB** (all v2).
+
+**Source of the error:** `reference/HARNESS_README.md:185` asserts
+`ALLOWED_MODEL_NAMES = frozenset({'gemma-4-31b-it-qat-w4a16-ct'})`, and line 174
+calls the small variants "for local CLI evaluation only". The string
+`ALLOWED_MODEL_NAMES` **occurs nowhere in the wheelhouse source dump**, so the
+README is the only witness — and this is its *second* documented error, after
+the `agent.yml` discovery claim. `validate.py` had encoded that sentence as a
+hard error, which would have refused a legal submission.
+
+### Why it changes strategy rather than just a constant
+
+- A **$10,000 Bonus Prize** goes to the highest-ranking E2B/E4B submission, with
+  **cross-track eligibility** — it stays eligible for the main leaderboard and
+  the Paper Track, so it is additive, not a fork.
+- Field sizes: small-model **~311 teams led by 0.10**; main **~4,088 led by
+  0.24**, where our `v00` scored 0.13 on the 31B.
+- Eligibility requires the bundle to be **one of the two selected final
+  submissions**, which is a deadline trap rather than a technical one.
+- The nine nulls support the hypothesis that `v00` sits at the W4A16 31B's
+  **quality ceiling**. This route does not test that; it exploits it.
+- E4B at 10.75 GB **retires the L4x4 constraint** that shaped every host
+  decision in the project brief, and should cut GPU-h per row — which re-prices every
+  remaining experiment under S002.
+
+**The trap in the names:** all four eligible identifiers carry the
+`-qat-w4a16-ct` suffix. `gemma-4-e4b-it` and `gemma-4-e2b-it` **are** registered
+aliases (`swegemma__registry.py:122-123`) but are **not** eligible models, and
+the Kaggle instance under that name is the bf16 `transformers` build. Widening
+the allow-list from the registry would ship an unpermitted bundle. Tests pin all
+four eligible names and all four ineligible aliases.
+
+Measurement launched: `kernels/22_baserate_e4b`, one arm, `v12_e4b` on
+`rich_clean39`, ~1.5-2 GPU-h. **Deliberately not paired against kernel 21's 31B
+arm** — different session, and this project does not pair across sessions.
+
+---
+
+## P012 + P013 RESULT — the time budget binds before capability does (2026-10-29, 5.36 GPU-h)
+
+Both kernels COMPLETE, **39 ledger rows each, the full expected count**, read
+from the `LEDGER_ROW` lines in the batch logs. `surrogate=False` on all 78 rows.
+Wheelhouse `lastUpdated` **2026-10-12 19:51:31** for both — unchanged, so the two
+arms are not straddling a republication. Quota 2.41h → 7.77h.
+
+| | P012 — 31B `v00` | P013 — E4B `v12` |
+|---|---|---|
+| bundle_hash | `6f3c38bf51665b01` | `d98038725758f491` |
+| resolved | 6/39 = **0.154** | 7/39 = **0.179** |
+| gold_hit | 14/39 = **0.359** | 28/39 = **0.718** |
+| **session timeouts** | **26 of 39** | **1 of 39** |
+| median wall | **1802.7 s** (= the 30-min cap) | **355.7 s** |
+| non-empty patch | 23/39 | **39/39** |
+| summed task wall | 15.67 h | 5.94 h |
+
+E4B serving is **verified from the log**, not inferred: `base model overridden to
+gemma-4-e4b-it-qat-w4a16-ct`, `served from .../gemma-4-e4b-it-qat-w4a16-ct/2`,
+and `session_runner.py --model-path .../gemma-4-e4b-it-qat-w4a16-ct/2`. The
+ledger's `model_served` field is **empty on all 78 rows** — a recording bug, not
+a serving failure. Worth fixing before it matters.
+
+### The first reading was wrong, and the subset analysis is what shows it
+
+Paired exact McNemar over the 39 shared task ids:
+
+| metric | 31B | E4B | Δ | discordant | exact p |
+|---|---|---|---|---|---|
+| resolved | 6/39 | 7/39 | +0.026 | 7 (3 vs 4) | **1.0000** |
+| gold_hit | 14/39 | 28/39 | +0.359 | 22 (4 vs 18) | **0.0043** |
+
+Taken at face value that says a 4B model localizes far better than a 31B. It
+does not. **Restricted to the 13 tasks where the 31B did not time out:**
+
+| metric | 31B | E4B | Δ | exact p |
+|---|---|---|---|---|
+| resolved | **6/13 = 0.462** | 3/13 = 0.231 | −0.231 | 0.2500 |
+| gold_hit | **12/13 = 0.923** | 8/13 = 0.615 | −0.308 | 0.1250 |
+
+Conditional on finishing, the 31B leads on **both** metrics, and the direction
+is the opposite of the headline. All 22 discordant gold_hits are drawn from the
+26 tasks the 31B never finished: on those, E4B picked up 4 resolved and 20
+gold_hit. **So the significant result measures wall-clock, not capability — and
+at a 30-minute cap that effect is larger than an 8× difference in parameter
+count.** Neither subset p-value is significant (n=13); only the direction is
+reported, and it is reported because it reverses the naive claim.
+
+### Two consequences, both load-bearing
+
+1. **P012 is not a measurement of v00 as the grader runs it.**
+   `v00_public_baseline` ships **no `eval_config.yaml`**, so the grader applies
+   the harness default — `swegemma/budget.py:18`, `time_minutes: float | None =
+   60.0`, and the agent's own system prompt reads `Time allowance: 60.0 minutes`
+   (`HARNESS_README.md:316`). P012 ran v00 under **v09's** shipped 30-minute cap,
+   not under v00's own. The configurations are not interchangeable and were
+   treated as such.
+2. **The 30-minute `eval_config.yaml` in v09/v10/v11 truncates ~2/3 of rich
+   tasks for the 31B.** Its stated rationale (v09's own comments) was a
+   pre-slowdown median of 25.9 min with 0/12 tasks reaching 60. Post-slowdown the
+   median is **censored at the cap** — the true median is unknown and ≥30. The
+   envelope the cap was sized for no longer exists. This does **not** make the cap
+   wrong: it was chosen because a Notebook Timeout scores *nothing*. It makes the
+   tradeoff quantified for the first time.
+
+### The base-rate branch point, answered
+
+the project's working notes made the next allocation conditional on the rich base rate: ≤0.05 →
+no A/B affordable at any k; 0.15–0.40 → paired testing possible. The answer is
+**0.154 capped / 0.462 among tasks that complete**, i.e. the upper band. Paired
+testing is affordable in principle. But `resolved` at k=1 produced only **7
+discordant pairs** and p=1.00 — **UNDERPOWERED, not a null**, exactly as S002
+predicted. Power was not bought here and is not claimed.
+
+### Caveat this entry will not paper over
+
+The paired McNemar above **pairs across two sessions**, which the P013 entry
+immediately above explicitly says this project does not do. The defence is
+partial: same day, same wheelhouse version, same lab dataset, same task list,
+same cap, same tool budget, same concurrency. The effects I actually rely on —
+26 timeouts vs 1, median 1802.7 s vs 355.7 s — are far too large to be a session
+artifact. The p-values are weaker claims and should be read as cross-session.
+
+### Follow-up launched
+
+`kernels/23_cap60_rich_31b` and `kernels/24_cap60_rich_e4b`, both at
+`max_time_minutes: 60` on the same 39 rich tasks, completing a 2×2 of model ×
+budget. Est. ~4-4.5 + ~2 GPU-h. Kernel 23 is also the first measurement of v00
+at the cap the grader actually gives it. Both are again cross-session.
+
+---
+
+## P014 + P015 RESULT — the 2×2 closes, and the E4B story reverses (2026-10-30, 10.63 GPU-h)
+
+Both COMPLETE, **39 rows each**. Neither arm tripped its 265-min timeout. Models
+verified from the logs (31B instance for kernel 23; `base model overridden to
+gemma-4-e4b-it-qat-w4a16-ct` for kernel 24). **Wheelhouse `lastUpdated`
+2026-10-12 19:51:31 for all four cells** — the entire factorial sits on one
+wheelhouse version, so nothing here straddles a republication. Quota 7.77h →
+18.40h. Cost over-ran the ~6.5h estimate by 4.1h.
+
+| cell | resolved | gold_hit | timeouts | median wall | non-empty patch |
+|---|---|---|---|---|---|
+| 31B @30 (P012) | 6/39 = 0.154 | 14/39 | **26/39** | 1803 s | 23/39 |
+| **31B @60 (P014)** | **12/39 = 0.308** | 21/39 | 15/39 | 2852 s | 34/39 |
+| E4B @30 (P013) | 7/39 = 0.179 | 28/39 | 1/39 | 356 s | 39/39 |
+| **E4B @60 (P015)** | **3/39 = 0.077** | 26/39 | **0/39** | 315 s | 37/39 |
+
+### 1. The 30-minute cap was halving our resolution rate
+
+Pre-registered reading #1 is **confirmed**. Paired, same bundle bytes, same 39
+tasks, only the budget differing:
+
+| 31B 30→60 | A | B | Δ | discordant | exact p |
+|---|---|---|---|---|---|
+| resolved | 6/39 | **12/39** | **+0.154** | **6 gained, 0 lost** | **0.0312** |
+
+**Six tasks gained and none lost.** That monotonicity is the point: more time
+cannot mechanically remove a resolve, so this is not a noise pattern, and it
+lands almost exactly where P012's uncensored subset predicted (6/13 = 0.46 → the
+60-min arm reached 12/39 with 15 still censored).
+
+**The uncensored subset is the WRONG analysis here, and our own tool said so
+wrongly.** `compare_censored` first reported this as "CONFOUNDED BY CENSORING --
+do not quote the pooled number". That is backwards for a budget intervention:
+the treatment's mechanism *is* preventing timeouts, so restricting to the 11
+tasks both arms completed conditions on a **post-treatment variable** and
+discards precisely the tasks the intervention rescued (it reports +0.091,
+p=1.00). Fixed by an explicit `censoring_is_outcome=True` /
+`--censoring-is-outcome`, because nothing in the rows can tell "starved by an
+unrelated difference" from "starved on purpose, and relieving that is the
+treatment". Tests pin that the flag changes the verdict and never the arithmetic.
+
+### 2. E4B is NOT competitive at the budget the grader actually gives
+
+At 60 minutes the ordering is unambiguous, and it holds in **both** readings:
+
+| 31B vs E4B @60 | 31B | E4B | Δ | discordant | exact p |
+|---|---|---|---|---|---|
+| resolved, pooled | 12/39 | 3/39 | −0.231 | **0 gained, 9 lost** | **0.0039** |
+| resolved, uncensored (24) | 12/24 | 3/24 | −0.375 | 0 gained, 9 lost | **0.0039** |
+
+Nine tasks the 31B resolves that E4B does not, **zero the other way**, and the
+subset analysis agrees with the pooled one rather than reversing it. So
+yesterday's apparent E4B parity (7/39 vs 6/39) was **entirely an artifact of the
+31B being starved**. `gold_hit` here is confounded (21/39 vs 26/39 pooled
+reverses to 21/24 vs 18/24) and must not be quoted.
+
+**This substantially weakens the $10,000 small-model route** as a *performance*
+play. It does not kill it — the small-model field is led by 0.10 and E4B's
+0.077 local on rich is not directly comparable to a private-set score — but E4B
+is no longer "free parity". It is ~4× worse at the real budget.
+
+### 3. An accidental replicate: ~20% of tasks are coin flips
+
+E4B at 30 vs 60 min is the same bundle, same model, same tasks, with a strictly
+larger allowance — and `resolved` went **7/39 → 3/39**, with **8 discordant
+pairs (2 gained, 6 lost)**, p=0.2891.
+
+A larger stated budget cannot mechanically reduce capability, so this is either
+pure run-to-run variance or mild harm from a longer allowance to wander (the
+agent is *told* its budget, so the two are not separable here). Compare the
+31B's 6-gained-0-lost over the same budget change: that asymmetry is itself the
+evidence that the 31B's gain is systematic while E4B's scatter is not.
+
+**Either way, ~8/39 ≈ 20% of tasks flip between runs of identical bytes.** This
+is the cleanest direct measurement of agent stochasticity this project has, and
+it is why k=1 cannot rank bundles — stated repeatedly before, now quantified on
+rich.
+
+### Follow-up launched
+
+`kernels/25_cap60_rich_31b_r2` (60 min) and `kernels/26_baserate_rich_r2`
+(30 min), both `v00`/31B on the same 39 tasks, giving **k=2 at each 31B cell**.
+Reason: the headline we might ship on (12/39) rests on k=1, and item 3 says a
+k=1 number can move by 4 tasks for no reason at all.
+
+---
+
+## P016 + P017 RESULT — the 60-minute headline replicates exactly; the 30-minute cell is still k=1
+
+**Run:** 2026-10-30. `kernels/25_cap60_rich_31b_r2` COMPLETE with **39/39 rows**;
+`kernels/26_baserate_rich_r2` **FAILED** (see below). Wheelhouse `lastUpdated`
+**2026-10-12 19:51:31** — unchanged, so P016 is directly comparable to P012–P015
+and no comparison here straddles a republication.
+
+| ID | Arm | Model | Cap | n | resolved | gold_hit | errored | timeouts | median wall |
+|---|---|---|---|---|---|---|---|---|---|
+| P014 | `cap60rich_v00` | 31B | 60 | 39 | **12/39** | 21/39 | 15 | 14 | 2852 s |
+| P016 | `cap60rich_r2_v00` | 31B | 60 | 39 | **12/39** | 22/39 | 14 | 14 | 2664 s |
+| P017 | `baserate_r2_v00` | 31B | 30 | **0** | — | — | — | — | — |
+
+P014 and P016 are a **true identical-bytes replicate**: same `bundle_hash`
+`6f3c38bf51665b01`, same seed 1001, same 39-task list, same wheelhouse, same
+cap. The only intended difference is the run.
+
+### 1. The aggregate reproduces; the individual tasks do not
+
+```
+resolved   pooled  A 12/39  B 12/39   delta +0.000  discordant 5+5  p=1.0000
+gold_hit   pooled  A 21/39  B 22/39   delta +0.026  discordant 8+7  p=1.0000
+censored         A 15      B 14            -> CENSORING BALANCED
+```
+
+Two readings of the same thing, and both matter:
+
+- **The headline number is stable.** 12/39 twice, to the task. `gold_hit` moved
+  by one. Timeouts were 14 both times. Whatever we would ship on, we would be
+  shipping on a reproducible 0.31 local resolution rate on rich.
+- **A quarter of individual tasks are noise.** `resolved` has **10 of 39
+  discordant pairs (5 gained, 5 lost)** and `gold_hit` **15 of 39 (8+7)** —
+  between two runs that differ in nothing. This replaces P015's accidental
+  estimate (~20%, confounded by a budget change) with a clean one: **~26% of
+  tasks flip on `resolved`, ~38% on `gold_hit`, for no reason at all.**
+
+The two facts are compatible because the flips cancel. That is luck, not
+stability: the *same* arithmetic says a single k=1 reading of a 39-task arm
+carries roughly ±3 tasks of pure scatter.
+
+### 2. The budget effect replicates in size, but its p-value depends on the pairing
+
+Pairing the 30-minute arm (P012, 6/39) against each 60-minute replicate
+separately, with `--censoring-is-outcome` (the treatment *is* preventing
+timeouts, so the pooled delta is the estimand):
+
+| pairing | resolved | Δ pooled | discordant | exact p |
+|---|---|---|---|---|
+| P012 → P014 | 6/39 → 12/39 | **+0.154** | 6 gained, **0** lost | **0.0312** |
+| P012 → P016 | 6/39 → 12/39 | **+0.154** | 8 gained, **2** lost | 0.1094 |
+
+**The effect size is identical to the task in both pairings. The significance is
+not.** Yesterday I leaned on "6 gained, 0 lost" — the strict monotonicity — as
+the evidence. The replicate shows that 0 was partly luck: with a ~26% per-task
+flip rate, some tasks will flip *against* a real improvement. The honest reading
+of the pair is **+6 tasks, replicated, at p between 0.03 and 0.11**.
+
+Those two tests share arm A, so they are **not** independent and must not be
+combined by Fisher's method or anything like it. The weaker p is the honest
+headline until the 30-minute cell has its own replicate.
+
+Direction is nonetheless not in doubt: `resolved` 6 → 12 → 12 and `gold_hit`
+14 → 21 → 22, with the censoring gap (26 errored → 15 → 14) moving in lockstep,
+which is the mechanism the intervention targets.
+
+### 3. P017 failed on a transient CUDA fault, not on anything of ours
+
+`kernels/26_baserate_rich_r2` v1 died **20 seconds into vLLM engine init**,
+2.9 min total, during the memory-profiling pass:
+
+```
+(Worker_TP0) torch.AcceleratorError: CUDA error: an illegal memory access was encountered
+  ... self.final_memory = self.current_memory_usage()
+(APIServer) RuntimeError: Engine core initialization failed. Failed core proc(s): {}
+```
+
+No ledger, no traces, `=== COPY FROM HERE ===` empty, `rows in block: 0
+(expect 39)`. Nothing in the preflight could have caught this: the gates all
+passed and the engine config printed correctly (`tensor_parallel_size=4`,
+`max_seq_len=32768`, the 31B QAT path). `cudaErrorIllegalAddress` inside
+`current_memory_usage()` on one of four ranks is a device/driver fault.
+
+Re-pushed as **P018** at 02:06 UTC on the same metadata. Cost of the failure:
+**2.9 min**, which is the system working — the arm order and the per-arm ledger
+reprint mean a dead engine costs minutes, not an allocation.
+
+**Incidental environment finding:** both runs executed on **Python 3.13**
+(`/usr/local/lib/python3.13/dist-packages/vllm` v0.19.1) and the 60-minute one
+succeeded. the project brief's claim that a 3.13 image has no measuring rig is now
+stale — the lab dataset ships `vendor/cp313` (9 wheels), which is what closed
+that gap. The *pin* is still correct to keep; the *reason* has changed.
+
+---
+
+## P018 RESULT — the balanced k=2 reading: the budget effect is real, smaller than k=1 said, and properly significant for the first time
+
+**Run:** 2026-10-30, `kernels/26_baserate_rich_r2` v2, COMPLETE, **39/39 rows**,
+124 min, **4.1 GPU-h**. Wheelhouse `lastUpdated` **2026-10-12 19:51:31** —
+unchanged, so all four runs of this comparison sit on one wheelhouse version.
+First run to carry `model_served`
+(`/kaggle/input/models/google/gemma-4/other/gemma-4-31b-it-qat-w4a16-ct/2`),
+confirming the 31B from the ledger instead of from a log line.
+
+### The four runs
+
+| ID | Cap | n | resolved | gold_hit | errored | timeouts |
+|---|---|---|---|---|---|---|
+| P012 | 30 | 39 | 6/39 | 14/39 | 26 | 25 |
+| P018 | 30 | 39 | **9/39** | 18/39 | 20 | 18 |
+| P014 | 60 | 39 | 12/39 | 21/39 | 15 | 14 |
+| P016 | 60 | 39 | 12/39 | 22/39 | 14 | 14 |
+
+All four are the same `bundle_hash` `6f3c38bf51665b01`, seed 1001, 39 rich tasks.
+
+### 1. The balanced estimate
+
+With k=2 at each cell the per-task value is a rate in {0, 0.5, 1}, so the right
+estimator is `paired_delta` — average the replicates **within** task, difference
+within task, then average across tasks (`stats.paired_delta`, n=39):
+
+| metric | 30 min | 60 min | Δ | SE | z | two-sided p |
+|---|---|---|---|---|---|---|
+| `resolved` | 0.192 | 0.308 | **+0.115** | 0.047 | +2.47 | **0.0135** |
+| `gold_hit` | 0.410 | 0.551 | +0.141 | 0.058 | +2.43 | 0.0151 |
+| errored (the mechanism) | 0.590 | 0.372 | **−0.218** | 0.057 | −3.79 | **0.0002** |
+
+On `resolved`, **8 tasks improve at 60 min, 1 gets worse, 30 are unchanged.**
+The mechanism — fewer tasks killed before finishing — is by far the strongest
+signal, which is what a budget intervention should look like.
+
+**So: 60 minutes beats 30 by ~+0.115 resolution rate on rich, p=0.0135.** That
+is ~4.5 tasks of 39, or ~60% more resolves in relative terms.
+
+### 2. The k=1 p-value swing is now fully explained
+
+`detectable_delta(SE_UNIT, k, k, n_tasks=39)`:
+
+| k per arm | detectable delta |
+|---|---|
+| 1 | **0.116** |
+| 2 | 0.082 |
+
+The true effect is **+0.115** and the k=1 detection threshold is **0.116**. The
+effect sat exactly *on* the boundary, which is precisely the regime where a
+p-value is a coin flip — hence 0.0312 against one replicate and 0.1094 against
+the other, from identical bytes. Nothing was wrong with either run; the design
+could not resolve an effect that size at k=1, and said so in advance.
+
+This is the clearest vindication the power rule in the project brief has had. It also
+means **the earlier p=0.0312 should never have been quoted** — not because it
+was unlucky, but because the design was not entitled to it.
+
+### 3. The 30-minute cell is much noisier than the 60-minute one
+
+The two 60-minute replicates agreed on the aggregate exactly (12/39, 12/39). The
+two 30-minute replicates did not: **6/39 vs 9/39**, with errored rows **26 vs
+20** and timeouts **25 vs 18**.
+
+`analyze_censoring.py` flags this correctly and it is worth stating plainly:
+**between two runs differing in nothing, the number of tasks killed by a
+30-minute cap moved by 6.** At 30 min the 31B's median wall *is* the cap, so
+whether a task finishes depends on host throughput that session. Near the cap
+the outcome is a stopwatch race; well clear of it, it is capability.
+
+Consequence for method: **a cap set near the median wall imports host variance
+into every metric read through it.** That is an argument for the 60-minute
+default beyond the point estimate — it is the more *reproducible* configuration,
+and 12/39-twice versus 6-then-9 is the evidence.
+
+### 4. What this does and does not settle
+
+- **Settled:** 60 min > 30 min for this agent on rich, Δ=+0.115 on `resolved`,
+  p=0.0135, on a balanced k=2 design with the mechanism confirmed at p=0.0002.
+- **Settled:** the shipped 30-minute `eval_config.yaml` in `v09`/`v10`/`v11`
+  costs real resolution. `v00` ships none and gets the harness default of 60.
+- **Not settled by any of this:** whether removing the cap is *safe* for total
+  notebook runtime on the grader. The cap exists to prevent a Notebook Timeout,
+  which scores nothing at all. That remains a submission decision.
+- **Not touched:** the private-set rate. All of this is local rich.
+
+### T013 — the grader is a budget problem, and the score decomposes (2026-11-04, 0 GPU-h)
+
+Built `src/swegemma_lab/grading_sim.py` + `scripts/simulate_grading.py` (25 new
+tests, suite 369 → 394). It simulates the *whole* verification the grader
+performs — 58 private tasks inside one notebook — rather than the per-task
+question every previous comparison asked. No GPU: it reads ledgers already on
+disk (P012, P014, P016, P018 — four arms of identical `v00` bytes, 156 task-runs).
+
+**Three measured facts hold it up.**
+
+1. **`resolved` is never true on a task the agent did not finish.** 0 of 71
+   censored-or-errored rows, across both caps. So `score = finish_rate × ρ` is a
+   structural identity, not a fit. `rho_from_rows` *raises* if a future run
+   violates it, because the identity is the model.
+2. **ρ (resolved | completed) does not move with the budget:** 0.462 and 0.474 at
+   a 30-minute cap, 0.500 and 0.480 at 60. Pooled **ρ = 0.481** (39/81), non-clock
+   failures 2.6%. So the measured +0.115 resolution gain from 30 → 60 min is
+   **entirely** 13 → 24 completions of 39. **Extra time buys completions, not
+   quality.**
+3. **Wall time is right-censored and cannot be averaged.** Pooling both caps under
+   Kaplan–Meier identifies the curve to 65.1 min and no further — 23.5% of tasks
+   were never observed to stop. By 30 min 37.8% have stopped; by 60 min, 64.1%.
+
+**The consequence, which reverses this session's earlier reading.** Two days ago
+I projected total wall (58 × mean) and warned that a 60-minute cap could not fit
+a 9–12 h notebook, arguing to *keep* our 30-minute cap. That projection was
+wrong in its premise: **all four arms ran `concurrency=12`**, so 26.6 h of summed
+task wall is ~2.2 h of session wall, and the serial arithmetic never applied.
+
+Running the inversion instead: v00 scored **0.13** under the 60-minute default,
+which needs a finish rate of 0.130/0.481 = **27.0%** — a level our curve reaches
+at **20.8 min**. So one number reconciles the grader to us, fitted at **2.89×**.
+
+**That factor is NOT a pace measurement and must never be quoted as one.** It is
+fitted to a score, so it absorbs hardware, repository difficulty *and* our own
+12-way contention together — and a grader giving each task more GPU would push it
+the other way. What survives the confound is the **relative** claim: a bundle made
+F times faster moves along the same curve whatever the factor is.
+
+**What a faster bundle is worth** (finish rate at a 60-min cap × ρ = 0.481):
+
+| bundle speedup | finish @ 60 | expected score | vs our 0.13 |
+|---|---|---|---|
+| 1.00× (v00 today) | 26.9% | **0.130** | — (reproduces the observation) |
+| 1.25× | 30.1% | 0.145 | +0.015 |
+| 1.50× | 36.3% | 0.175 | +0.045 |
+| **2.00×** | 51.1% | **0.246** | **+0.116** |
+| 2.50× | 59.2% | 0.285 | +0.155 |
+| ≥3× | — | — | **not identified** — the curve's tail is a floor |
+
+Leaderboard context: top 0.29, second band 0.24, ours 0.13, one task 0.0172.
+**A 2× faster bundle is the second band. A 2.5× faster bundle is the top.**
+
+**So the cap decision resolves, and it is not the one I gave on 2026-11-01.**
+Capping helps only if the budget binds *and* the grader runs at our contended
+pace — but the fitted factor says it does not, and v00's own 0.13 proves a
+60-minute bundle did fit. Drop the cap. Raising finish rate, not rationing time,
+is the lever.
+
+**Where the ~2× has to come from, and what is already built.** T007 found the
+mechanism: per-step latency is decode, corr(completion tokens/step, s/step) =
++0.968, and verbosity does not buy quality (gold_hit *falls* across verbosity
+quartiles). `v08_decode_clamp` already clamps `thinking_budget` 4096 → 1024,
+removing ~29.6% of decode ≈ **1.4×** — worth only +0.045 on the table above.
+T007 priced 512 at ~46% removed (**~1.85×**, ≈ 0.23) and rejected it on
+truncation risk (12% of steps) **without pricing the upside**. On this table
+that rejection cost ~3.5 tasks of expected score, so 512 is now worth measuring
+rather than assuming.
+
+**Limits, stated plainly.** All of it is `rich` tasks on our rig at concurrency
+12. ρ is measured on repositories the private set probably does not contain. The
+multiplicative-speedup model assumes a clamp shifts the curve rather than
+reshaping it, which is untested. And the whole table is anchored on a *single*
+observed score — if v00's 0.13 was itself a lucky draw (three runs of identical
+bytes scored 0.12/0.13/0.15), the factor moves with it.
+
+
+## P019 + P020 / T014 RESULT — the clamp did not discriminate, and the lever it was aimed at is not free (2026-11-04, 9.0 GPU-h)
+
+| ID | Date | Change vs. parent | finish | resolved | gold_hit | ρ | Run time | Notes |
+|----|------|-------------------|--------|----------|----------|---|----------|-------|
+| P019 | 2026-11-04 | `v13_clamp512`, `thinking_budget` 512 | 33/39 = 0.846 | 13/39 | 29/39 | 0.394 | ~4.5 GPU-h | k=1, 60-min cap, conc 12, `bundle_hash 93f808891d3f` |
+| P020 | 2026-11-04 | **control**: `v00_public_baseline`, 4096 | 30/39 = 0.769 | 11/39 | 26/39 | 0.367 | ~4.5 GPU-h | k=1, same kernel-creation date, same base image |
+
+Both on `rich_clean39.txt`, seed 1001, `concurrency: 12`, 39/39 rows each, banked
+from the committed ledger and cross-checked row-for-row against the
+`LEDGER_ROW` echo in stdout (identical sets).
+
+### 1. The pre-registered primary endpoint: UNDERPOWERED
+
+`detectable_delta(SE_UNIT, 1, 1, 39)` = **0.1158**, design target 0.05. Read
+first, as the rule requires.
+
+| metric | control (4096) | v13 (512) | Δ | exact McNemar p |
+|---|---|---|---|---|
+| finish rate | 0.769 | 0.846 | **+0.077** | — |
+| `resolved` | 11/39 | 13/39 | **+0.051** | 0.6250 |
+| `gold_hit` | 26/39 | 29/39 | **+0.077** | 0.5078 |
+
+Every delta is *below* the detection threshold, so the verdict on all three is
+**UNDERPOWERED, not HOLD** — 3 tasks of movement against ±3 tasks of measured
+scatter between identical bytes. `analyze_censoring --censoring-is-outcome`
+exits 0 (censoring balanced, 9 vs 6 of 39) and the pooled delta is the one to
+quote; the uncensored subset reads Δ=+0.000 on `resolved`, which conditions on a
+post-treatment variable and is the wrong reading here.
+
+**So the dose-response over 4096 → 512 did not resolve.** ρ at 0.394 is nominally
+below the manifest's 0.40 branch point, but that branch was written against the
+banked ρ=0.481, and the same-image control reads **0.367** — *lower* than the
+clamp's. The clamp's ρ is therefore not distinguishable from its control's, and
+the pre-registered "truncation is buying time with patch quality" branch cannot
+be entered on this evidence.
+
+### 2. The control is the result: the base image moved v00 by more than the knob did
+
+Kernel 28 existed only to defend against the kernel-creation-time pinning gotcha
+found the same day. It earned its 4.5 GPU-h outright. **Identical `v00` bytes,
+same seed, same cap, same task list, same wheelhouse:**
+
+| arm | base image | median wall (completed) | finish | resolved | ρ |
+|---|---|---|---|---|---|
+| P014 | `sha256:9a6bcfda` | 1934 s | 24/39 = 0.615 | 12 | 0.500 |
+| P016 | `sha256:9a6bcfda` | 1724 s | 25/39 = 0.641 | 12 | 0.480 |
+| **P020** | `sha256:de153e6d` | **1135 s** | **30/39 = 0.769** | **11** | **0.367** |
+
+The newer image is ~35–40% faster per task and finishes **5 more tasks**, and
+resolves **one fewer**. Had v13 been compared against the banked P014/P016
+reference as originally planned, the comparison would have reported finish
++0.218 and credited all of it to a one-line YAML change.
+
+### 3. Why the gain cancelled: the marginal completed task is not an average task
+
+T013's score curve rests on ρ being constant, so that every task a speedup
+recruits resolves at ~0.48. That is *flat across caps*, which is what was
+measured; the curve needs *flat across the margin*, which was not. Tested
+directly (`grading_sim.marginal_conversion`):
+
+| comparison | tasks the reference also reached | tasks newly reached | Fisher p |
+|---|---|---|---|
+| P014+P016 → P020 (faster image, same bytes) | 11/26 = 0.423 | **0/4 = 0.000** | 0.2679 |
+| P020 → P019 (clamp vs same-image control) | 11/25 = 0.440 | **2/8 = 0.250** | 0.4311 |
+| **pooled** | **22/51 = 0.431** | **2/12 = 0.167** | 0.1100 |
+
+Each pair alone is UNDERPOWERED (`MARGINAL_MIN_TASKS = 20`) and neither p clears
+0.05. But both point the same way, the mechanism is obvious in hindsight — the
+tasks that time out are the hard ones, so recruiting them lowers conversion —
+and the pooled gap is 0.26 on a quantity T013 treated as constant. **Treat it as
+a direction with a magnitude attached, not a settled rate.**
+
+Corrected curve (`expected_score_with_marginal`, ρ=0.481 up to the 0.628 anchor
+and 0.167 above it), in local-rich units:
+
+| finish rate | constant-ρ score | corrected |
+|---|---|---|
+| 0.70 | 0.337 | 0.314 |
+| 0.80 | 0.385 | 0.331 |
+| 0.85 | 0.409 | **0.339** |
+| 1.00 | 0.481 | 0.364 |
+
+v13 already sits at finish 0.846. **The entire remaining headroom from finishing
+every task is ~1 task**, against the ~9 tasks T013's table implied.
+
+### 4. The real ceiling: a fixed pool of 17 tasks
+
+`grading_sim.resolvable_pool` over all six 31B arms — **234 task-runs**:
+
+- **17 of 39 distinct tasks have ever resolved.** Every arm's resolved set is a
+  subset of that union, v13's included.
+- Best single arm: **13**. Resolved by *every* arm: **4**.
+- **v13 resolved no task outside the union.** It unlocked nothing; it re-sampled
+  the same pool slightly more often.
+
+So resolution is bounded at 0.436 on this task list, the best arm is already
+within 4 tasks of it, and 22 of 39 tasks have never resolved under any
+configuration we have run. Rough translation to the board (v00's local
+12/39 = 0.308 ↔ public 0.13, ratio 0.42, and the repo mix differs): finishing
+every task reaches ~0.15, and emptying the whole pool reaches ~0.18. **The 0.24
+band is not behind the finish rate.** It is behind the 22 tasks that have never
+resolved, which is a capability problem, not a stopwatch problem.
+
+### 5. What this settles and what it does not
+
+**Settled:** speed work on this bundle family is close to exhausted. v13 is the
+fastest and highest-finishing arm we have ever run and scores inside noise of
+its control. Do not price `thinking_budget` 256; do not move
+`max_output_tokens` for speed.
+
+**Not settled:** the marginal rate itself (12 tasks, p=0.11); whether the pool is
+a property of the agent or of the 39-task rich list (fastapi is still blocked by
+the starlette fault, so 90 tasks are unmeasured); and whether any of it transfers
+to the private repo mix. The pool ceiling is the strongest claim here and it is
+the one most specific to this task list.
+
+### 6. The 22 never-resolved tasks are not time-starved, and they are not lost to localisation
+
+The cheapest and sharpest reading of the whole run, taken from rows already on
+disk across all six 31B arms:
+
+- **`resolved` is a strict subset of `gold_hit`.** Of v13's 33 completed tasks,
+  **0** resolved without localising the gold file. So localisation is necessary
+  and the two metrics are nested, not independent.
+- **v13's 33 completed tasks split 13 / 14 / 6:** 13 localised *and* resolved,
+  **14 localised but not resolved**, 6 not localised at all.
+- **Of the 22 tasks that have never resolved, 18 were localised at least once**,
+  and only 4 were never localised by any arm.
+- **Every one of the 22 was completed by at least one arm.** None is a timeout
+  problem. Completion counts across the 6 arms run 1–6, with zero tasks never
+  completed.
+
+So the loss is concentrated in one place: **the agent finds the right file,
+finishes inside the budget, and writes a patch that does not pass the hidden
+test.** Not time, not search, not the clock. That is either patch quality or the
+known dependency-version floor (~18 of 129 overall, grader's pinned wheel cache
+private and unfixable from here), and **separating those two is the single
+highest-value 0-GPU-h thing left** — it decides whether the rich list is
+saturated or whether there is real headroom.
+
+The 18 localised-but-never-resolved tasks, which are the diagnostic target:
+
+```
+rich_3052 rich_3061 rich_3063 rich_3180 rich_3468 rich_3470
+rich_3471 rich_3480 rich_3506 rich_3535 rich_3675 rich_3772
+rich_3930 rich_3934 rich_3938 rich_3942 rich_3953 rich_4006
+```
+
+The 4 never localised by any arm: `rich_3105 rich_3935 rich_3944 rich_4076`.
+
+### 7. The clamp *did* work mechanically — it halved a non-retryable failure mode, and that still did not buy resolution
+
+The clamp is not inert. `recover_from_log.py`'s signature counter over each arm's
+stdout, plus per-task logs:
+
+| | control (4096) | v13 (512) |
+|---|---|---|
+| `ContextWindowExceededError` occurrences | **64** | **24** |
+| tasks hitting a context overflow | **8/39** | **3/39** |
+
+`context_window_exceeded` is **non-retryable** — input + `max_output_tokens`
+exceeds `max_model_len` and the task is lost outright — so this is a real
+correctness effect, not a speed one, and it is the largest single change the
+clamp produced.
+
+**Context overflow is close to fatal where it happens:** the control's 8 overflow
+tasks resolved **1/8**; v13's 3 resolved **0/3**.
+
+**And it explains about half the finish-rate gain.** Of v13's 8 newly completed
+tasks, **4 had overflowed in the control** (7 of 8 had timed out — the two
+overlap, because an overflow burns the budget). But of those 4, only
+`rich_3278` went on to resolve; the other three completed and still failed the
+hidden test.
+
+So the causal chain is intact and the conclusion is unchanged: **the clamp
+removes a genuine failure mode, the removal converts into completions, and the
+completions do not convert into resolutions.** The constraint is downstream of
+everything speed or budget can reach.
+
+This is the one place a *correctness* bundle has a measured target: 3 tasks still
+overflow at 512, and `scripts/submit.py` already warns on exactly this —
+`code_analyzer`'s `max_output_tokens=8192` leaves an input ceiling of 24,576
+against 24,577 tokens observed in `probe_c12`. That is a non-retryable loss with
+a one-line fix and it is **not** a speed change.
+
+**Caveat:** both arms are k=1, so 8 vs 3 tasks is 5 tasks against ±3 of measured
+scatter. The direction is supported by the occurrence counts (64 vs 24, a much
+larger ratio than scatter would give) but the per-task figure is not precise.
+
+---
+
+## T015 RESULT — the never-resolved rich tasks are patch quality, not a floor (2026-11-05, 0 GPU-h)
+
+The question T014 left blocking: of the **18 rich tasks that were localised at
+least once but have never resolved**, how many are the known dependency-version
+floor and how many are a genuine patch-quality failure? If most were the floor,
+the rich list would be saturated and further work on it pointless.
+
+Answered with no GPU, from evidence already banked: every arm commits
+`results/<arm>/test_outputs/<task>.log`, the real pytest output from **after the
+hidden `test_patch` was applied**. `scripts/classify_failures.py` reads all of
+them — 144 task-arm cells over 6 31B arms and 2 E4B arms.
+
+### The answer: zero of 18 are a dependency floor
+
+| cell category | n | what it means |
+|---|---|---|
+| `PATCH_ASSERT` | **81** | the test ran and asserted against the patch's behaviour |
+| `NO_TEST_RUN` | 30 | agent never finished; no test was run |
+| `TRUNCATED` | 19 | pytest killed mid-run — **missing data, not a verdict** |
+| `PATCH_OTHER` | 6 | ran, failed, no assertion signature |
+| `PATCH_MISSING_SYMBOL` | 4 | patch never defined a symbol the test imports |
+| `PATCH_SIGNATURE` | 3 | wrong signature / missing kwarg |
+| `ALL_PASSED` | 1 | resolved — the E4B cell on `rich_3535` |
+| **`DEP_IMPORT` / `DEP_VERSION`** | **0** | **no dependency failure anywhere** |
+
+Per-task verdict over the 18: **17 PATCH QUALITY, 1 NO EVIDENCE** (`rich_3772`),
+**0 DEPENDENCY FLOOR**.
+
+### Why this is sound rather than a guess, and it is the list's own design
+
+`rich_clean39` was frozen on the criterion that **the gold patch resolves 39/39
+and the null patch 0/39** (`make_eval_kernel.py:1215`). So on every task in it
+the installed dependency versions are *provably* sufficient — a correct patch
+passes. Any failure on this list is therefore the agent's patch, by
+construction, and the empirical 0/144 confirms the construction held.
+
+This also **reconciles rather than contradicts** the README's floor of "18 of
+129". That figure is from the C004 gold calibration across all repos, and those
+18 tasks were *excluded* from clean-N. The floor is real on the full 129 and is
+zero on `rich_clean39` on purpose. The two numbers were never in conflict; the
+README just never said that the clean list has none of it, so a reader (me,
+yesterday) could carry the floor into a set that excludes it. README now says so.
+
+### Two classifier traps, each of which gave a wrong first answer
+
+1. **An ImportError is only a dependency floor when the module is external.**
+   My first pass flagged `rich_3930` as `DEP_import` on
+   `ImportError: cannot import name 'CellSpan' from 'rich.cells'`. But the path
+   resolves to `/tmp/swegemma_sandbox_*/workspace/rich/cells.py` — the repo
+   *under test* — and the gold patch for that task is what **adds**
+   `CellSpan = Tuple[int, int, int]`. The agent edited the right file and never
+   defined the symbol. That is incompleteness, not a version conflict.
+2. **A truncated pytest stream is not a verdict.** 19 of 144 cells are progress
+   dots with no `[100%]` and no summary line — the test process was killed. My
+   first pass scored them as failures. They are missing data and are now excluded
+   from the task verdict, which is why one task reads NO EVIDENCE instead of
+   being silently counted against the patch.
+
+### `rich_3772` is unscoreable, and deterministically so
+
+Every one of 8 arms either timed out or had its test run killed. The 5 arms that
+got as far as running pytest produced a **byte-identical 39-byte** log —
+`...................s..`, i.e. 22 tests then cut — across two different models
+and five sessions. Identical truncation in independent runs is not a stopwatch
+race; something in that task's test run dies at a fixed point. Treat it as a
+harness artifact: it cannot score for any patch, so it is a 1-task deduction
+from the reachable set rather than a target.
+
+### The pool is NOT a capability ceiling — the 4B model proves it
+
+PROGRESS item (4) called the 17-task resolvable pool a capability ceiling. The
+free cross-check refutes the strong form of that:
+
+| | distinct tasks ever resolved |
+|---|---|
+| 31B, 6 arms, 234 runs | **17** |
+| E4B, 2 arms, 78 runs | 9 |
+| resolved by E4B and **never** by the 31B | **1** (`rich_3535`) |
+| union of every arm, either model | **18 / 39** |
+| never resolved by anything (312 runs) | **21** |
+
+`rich_3535` resolved under **E4B** — a strictly weaker model — and failed in all
+six 31B arms (two of which localised it). So at least one task in the
+"never-resolved" set is not beyond the system; the 31B is losing it to something
+other than capability. One task is one task, and at k=1 per arm this is a
+single observation, not a rate. But it is enough to retire "capability ceiling"
+as the *explanation*, and 17 → 18 as the union.
+
+### What this settles, and what it does not
+
+**Settles:** the rich list is **not** saturated by an unfixable floor. The 21
+tasks nothing has ever resolved fail on patch *correctness*, measured, not
+assumed. So correctness work has a real target on this list, and T016 is
+unblocked. It also means the earlier translation of the pool to the board
+(~0.18 from emptying it) was an estimate of *our* reach, not of what is
+reachable.
+
+**Does not settle:** which correctness defect dominates. 81 of 144 cells are
+assertion failures and I have not clustered them by failing test. Nor does it
+transfer to fastapi, where the floor is real and ~76% of rows were ungradeable
+— nothing here says anything about that half of the task set.
+
+**Cost:** 0 GPU-h, ~50 min wall. `scripts/classify_failures.py` +
+`src/swegemma_lab/failure_modes.py` + 22 tests (suite 414 → 436).
+
+---
+
+## T017 RESULT — what the task TELLS the agent predicts resolution, and it is the largest effect measured on this project (2026-11-05, 0 GPU-h)
+
+Follow-on from T015, same data, no GPU. T015 established the never-resolved
+tasks are patch-quality failures. The obvious next question was *which defect*,
+so I clustered the 81 assertion-failure cells by failing test name. The
+clustering answered one question and exposed a much bigger one.
+
+### There is no shared defect — 58 distinct failing tests over 20 tasks
+
+Every failing test name appears in **exactly one** task. So no single
+correctness bug is behind the pool, and no prompt rule aimed at a defect class
+can reach it. That closes "find the common bug" as a strategy.
+
+What the clustering *did* show is the number that matters:
+
+| failing tests per task (min across arms) | tasks |
+|---|---|
+| **1** | **12** |
+| 2 | 1 |
+| 3 | 2 |
+| 4 | 2 |
+| 6 | 2 |
+| 12 | 1 |
+
+**12 of 20 tasks fail exactly one test**, and **11 of those 12 localised the
+gold file correctly** at least once. The agent finds the right file, edits it,
+finishes in budget, and is wrong in one detail.
+
+### Why: for most of those tasks, the specification is behind a URL
+
+Reading the problem statements the agent is actually given for the 12:
+
+| task | statement (excl. URLs) | fails on |
+|---|---|---|
+| `rich_3944` | `fix fonts` (15 chars) | `assert 0 == 1` |
+| `rich_3934` | `empty live` (16 chars) | `assert '\n' not in ...` |
+| `rich_3470` | `Fix record and capture` (26) | `'Print 0\n...4\n' == 'Print 0\n'` |
+| `rich_3480` | `fix infinite loop in append` (33) | `Cannot append Text to itself` |
+| `rich_3063` | `Fix escaping trailing backslash` (37) | `'C:\\' == 'C:\\\\'` |
+
+`hints_text` is **empty on all 12**. The statement is a PR title plus
+`Fixes https://github.com/Textualize/rich/issues/NNNN`, and the competition
+forbids internet with the L4 accelerator, so the issue text is unreachable. The
+agent is asked to infer exact intended semantics from a 15-character title.
+
+### Measured over all 39, this is the strongest predictor the project has found
+
+| feature | resolved (n=17) median | never (n=22) median | Mann-Whitney p |
+|---|---|---|---|
+| statement chars | 652.0 | 105.5 | **0.0132** |
+| **statement chars excluding URLs** | **597.0** | **44.5** | **0.0065** |
+| number of URLs | 1.0 | 1.0 | 0.8580 |
+| `hints_text` chars | 0.0 | 0.0 | 1.0000 |
+
+Median split at 111 chars (ex-URL):
+
+| statement | resolved |
+|---|---|
+| above median | **13/19 = 0.68** |
+| at or below median | **4/20 = 0.20** |
+
+A **3.4×** difference in resolution rate, on a property of the *task* that no
+bundle, prompt, cap or model can change. Two-sided, tie-corrected
+Mann-Whitney; p=0.0065 survives a ×4 Bonferroni for the four features (0.026).
+
+### Why I believe the direction, and what I cannot separate
+
+The obvious confound runs the **protective** way: a longer statement describes a
+*bigger* change, which ought to be harder, yet those are the ones that resolve.
+And localisation is not the mechanism — 11 of the 12 single-test failures found
+the gold file.
+
+What I **cannot** separate with this data: "underspecified" from "subtle". A
+one-line title may mark a terse spec *or* a subtle one-line bug, and both
+predict failure. Distinguishing them needs an intervention, not more of this
+observation. Nor is any of this an intervention result: nothing here shows a
+prompt change recovers these tasks. n=39, observational, one repo.
+
+### What it changes
+
+1. **It explains the measurement history better than capability does.** If
+   roughly half the tasks do not state what to do, the score is largely set by
+   the task mix, not the bundle. That is consistent with identical bytes scoring
+   0.12 / 0.13 / 0.15, with six arms landing inside a 17-task pool, and with
+   every bundle A/B returning UNDERPOWERED. We may have been spending GPU-hours
+   measuring the task set.
+2. **It retargets the agent work.** The reachable lever is not reasoning depth,
+   speed or topology — it is **recovering specification from material the agent
+   can actually read** when the statement is short and ends in a link: the
+   repo's own history, changelog, and the tests and call sites around the symbol
+   named in the title. That is mechanistically motivated, repo-agnostic (so it
+   passes the validator's repo-token lint), and testable as a bundle.
+3. **It gives a free private-set prediction.** The ratio of short to long
+   statements in the private 58 bounds what any agent can score there. If the
+   private mix matches rich_clean39, ~half the set is severely underspecified.
+
+### Honest status
+
+**This is a correlation on 39 tasks, pre-registered nowhere.** It is the
+strongest signal available but it is not a licence to ship: the ship rule still
+keys on `resolved` with k≥2. Treat item 2 above as the hypothesis to test next,
+with the statement-length split as its pre-registered stratification — the
+prediction being that a spec-recovery bundle helps on the *short*-statement
+stratum and does nothing on the long one.
+
+**Cost:** 0 GPU-h, ~25 min, on data already banked.
+
+---
+
+## P021 RESULT — the starlette blocker is gone, and the candidate fix is harmful (2026-11-09, 0 GPU-h, CPU-only)
+
+`kernels/19_venv_probe`, pushed as kernel version 3 and run to COMPLETE in ~9
+minutes of compute on a 4-CPU kernel. **Zero GPU quota.** Three arms, gold
+calibration over the first 8 fastapi tasks, asking whether shadowing
+`starlette` inside each task venv repairs fastapi verification.
+
+### The answer is that nothing needed repairing
+
+| arm | venv mode | gold passed | wall |
+|---|---|---|---|
+| **A_inherit** | `inherit` (today's default) | **8/8** | 95 s |
+| B_shadow | `shadow` | **0/8** | 141 s |
+| C_isolated | `isolated` | **0/8** | 37 s |
+
+**A passes everything.** The premise of the probe — that fastapi task venvs
+inherit a `starlette` the snapshots cannot use, so ~76% of rows die on
+`TypeError: Router.__init__() got an unexpected keyword argument 'on_startup'`
+— no longer holds on this image. Two independent confirmations in the log:
+
+- The outer interpreter carries **starlette 1.6.0 with fastapi 0.141.1**, which
+  are mutually compatible. The documented failure needed fastapi 0.4x against
+  starlette 1.x.
+- `report_declared_pins` found **no declared starlette spec at all** across the
+  8 snapshots, so arm B had nothing to install and the probe itself logged
+  `shadow spec: (none found -- arm B is a no-op)`.
+
+**Cause: the wheelhouse moved, as it always can.** It arrives as
+`dataset_sources` and no pin of ours freezes it, so its fastapi is now modern.
+The blocker that shaped weeks of planning was dissolved by someone else's
+republication, and nothing in our ledger would have told us.
+
+### Arm B is not a no-op — it is destructive, and the reason generalises
+
+B had an empty shadow list and still scored 0/8 where A scored 8/8, which means
+`--venv-mode shadow` is harmful by itself. Every row failed identically:
+
+```
+ImportError: cannot import name 'adapters' from 'requests'
+  (/tmp/swegemma_sandbox_*/workspace/fastapi/requests.py)
+```
+
+Read the path: that is **the repo's own `requests.py`**, not the installed
+package. Shadow mode works by making the venv's own `site-packages` take
+precedence over the inherited `.pth` entries, and that same precedence flip puts
+the *work tree* ahead of the real dependency. A repository containing a module
+named like one of its dependencies is therefore broken by the fix. This is the
+same trap as T015's `CellSpan`: an `ImportError` naming something that resolves
+**inside the sandbox work tree** is never a dependency problem.
+
+C_isolated fails for the stated reason (`No module named pytest`) and only
+confirms that inheritance is what supplies the test dependencies, so B's
+reading is the one that matters.
+
+### What this changes
+
+1. **Do not wire `--venv-mode shadow` into `session_runner.py`.** That wiring
+   was an open task on the grounds that the fix "does not reach the GPU eval
+   path". It must not: it would have taken a working 8/8 to 0/8.
+2. **fastapi gold calibration is available today, free.** The cheap next step is
+   a full 67-task fastapi gold/null calibration on CPU to rebuild a clean
+   fastapi list, which would roughly triple the measurable task set from
+   `rich_clean39`.
+3. **But this probe did not run an agent**, so it does not yet license the claim
+   that fastapi is measurable end to end. Gold calibration never loads
+   `google-adk`; the ~76% eval-path failure rate was measured with the agent in
+   the loop. Confirm on the eval path before planning a fastapi arm.
+4. **Record the wheelhouse version with every run, which we still do not do.**
+   This result is the second time a wheelhouse republication silently changed
+   what our own code does (P003 was the first). The image was
+   `gcr.io/kaggle-images/python@sha256:17b2fc7f…`, Python 3.13.15.
+
+**The cp313 overlay works.** `vendor/cp313` resolved all 9 version-locked
+wheels, `install plan: 41 wheel(s), 0 unresolved`, and the five-symbol preflight
+passed. Both earlier CPU kernels died in 35 s at this step; this one cleared it
+in 71 s.
+
+**Cost:** 0 GPU-h, ~15 min wall.
+
+---
+
+## T018 PREMISE — the agent rarely tries spec recovery, and the form it reaches for returns nothing (2026-11-09, 0 GPU-h)
+
+T018 proposes telling the agent to recover intent from repo history and the
+changelog when the problem statement is a title plus an unreachable link (T017).
+Before pricing a 4.5 GPU-h arm, the premise was tested against the 234 banked
+31B task-arm cells (6 arms x 39 rich tasks). Counted as an attempt: any
+`git log`, `git show`, `git blame` or `CHANGELOG` command.
+
+### The capability exists and the headroom is real
+
+**The sandbox has full git history.** `trace_rich_3944` shows
+`git log -p -S "Fira Code"` returning a complete 2022 commit — message, body,
+`Update CHANGELOG.md`, and the diff. So spec recovery is not blocked by the
+environment, which is the first thing that could have killed T018.
+
+**But the agent almost never tries it: 31 of 234 cells, 13.2%.** Per T017
+stratum the rate barely moves — 15.0% on short statements, 11.4% on long — so
+the agent does *not* currently reach for history when the statement is the one
+thing that would justify it. Of the 16 never-resolved short tasks, **9 attempted
+it in 0 of 6 arms**. There is room for an instruction to change behaviour.
+
+### The one number that argues against T018, and why it is not decisive
+
+| cells | resolved | not | rate |
+|---|---|---|---|
+| attempted recovery | 3 | 28 | **0.097** |
+| no attempt | 60 | 143 | **0.296** |
+
+Attempting correlates with *failing*, threefold. This is **not** evidence that
+recovery hurts, and must not be reported as such: the agent reaches for history
+when it is already stuck, so the attempt is a marker of a hard task, not a cause
+of the outcome. The selection runs the wrong way for a causal reading, and
+n=31 with 3 successes carries no power regardless. It does mean there is **zero
+positive observational evidence** that history searching helps, so T018 is a
+hypothesis, not a near-certainty.
+
+### What the cost table actually says — and it redesigns the prompt
+
+Output bytes per command form, over 7,975 commands in the same cells:
+
+| form | n | median bytes | p90 | truncated |
+|---|---|---|---|---|
+| `git log --grep=` / `-S` **without** `-p` | 88 | **60** | 174 | 0 |
+| `CHANGELOG` reads | 26 | **127** | 513 | 0 |
+| `git log --oneline` | 19 | 988 | 2,510 | 0 |
+| `git log -p` (full diffs) | 24 | **5,263** | 5,515 | 3 |
+| all other commands | 7,809 | 140 | 1,361 | 42 |
+
+**A 60-byte median means the form the agent prefers finds nothing.** It is
+searching *commit messages* for words from a 15-character title, and the history
+does not contain them. The form that returned real specification in rich_3944 is
+the pickaxe — `-S "<symbol>"`, which searches the *content* of changes — and
+that is the 5 KB row. The changelog is the same story: a 127-byte median is
+mostly misses.
+
+So the design follows from measurement rather than taste:
+
+1. **Prefer `-S "<symbol>"` over `--grep`.** Search what changed, not what
+   someone wrote about it. The symbol comes from the title, which is the one
+   thing a short statement does give.
+2. **Cost is capped by the harness, not by us.** `git log -p` tops out at ~5.8 KB
+   with 3 of 24 truncated, so the feared context blow-up is bounded; the clamp
+   (v13) already handles the overflow case. This removes the main mechanistic
+   objection to instructing it.
+3. **Do not spend calls on the changelog first.** Median 127 bytes.
+
+### Status
+
+Premise **survives**, with its weakest link named: feasible, large headroom,
+a measured command form to prefer, and no positive evidence of benefit. The
+correlation above is confounded and is recorded so that a future session does
+not rediscover it and read it as a refutation.
+
+**Correction to an earlier reading in this session:** the traces' `elapsed_s` is
+**cumulative session time**, not per-call duration (median 933 s on ordinary
+commands proves it). A single `git log` call costing 324 s was misread off that
+field; no per-call wall cost is available from these traces.
+
+**Cost:** 0 GPU-h, on data already banked.

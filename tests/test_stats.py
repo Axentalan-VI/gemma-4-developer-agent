@@ -416,7 +416,7 @@ def test_power_is_only_assessed_when_k_is_known():
 
 
 def test_k1_is_underpowered_and_k2_is_not():
-    """Calibration: PLAN.md designs experiments to move ~0.05.
+    """Calibration: the project plan designs experiments to move ~0.05.
 
     The planning table is defined at the size SE_UNIT was measured on, n=129:
     k=1 is ~0.064 -- above 0.05, so a single pair of runs cannot see the effects

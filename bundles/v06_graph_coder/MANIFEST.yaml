@@ -121,7 +121,7 @@ risks:
     tasks. `max_output_tokens` is a RESERVATION sent on every request, so the
     root coder's input ceiling is 32768 - 8192 = 24,576 tokens. A prompt reaching
     24,577 died on a NON-RETRYABLE ContextWindowExceededError and the task was
-    lost outright rather than degraded (LESSONS 2026-10-06). `search_similar_code`
+    lost outright rather than degraded (the project's working notes, 2026-10-06). `search_similar_code`
     returns full source for k symbols straight into the ROOT context -- exactly
     what HARNESS_README 10.4 says the AgentTool pattern exists to prevent.
 

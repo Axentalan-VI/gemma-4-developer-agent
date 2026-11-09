@@ -118,7 +118,7 @@ changes:
 rejected_alternative:
   id: remove-run_command-from-analyzer
   why_rejected: >
-    This was the planned v05 in HANDOFF.md: keep the analyzer, strip its
+    This was the planned v05 in the project's working notes: keep the analyzer, strip its
     `run_command`, so "the observed grep loop becomes structurally impossible".
     Rejected on two pieces of evidence gathered before building.
 
@@ -129,7 +129,7 @@ rejected_alternative:
        tool displaces the loop rather than ending it. The analyzer would keep
        `read_file` and three graph tools to loop on.
 
-    2. IT WOULD LEAVE THE ANALYZER CLOSE TO BLIND, and HANDOFF.md flagged this as
+    2. IT WOULD LEAVE THE ANALYZER CLOSE TO BLIND, and the project's working notes flagged this as
        the open question. It is worse than it looks there, because
        `search_similar_code` is NOT a free-text search: HARNESS_README.md:497
        states the sandbox has no live embedding server, so `embed(query)` resolves
@@ -170,7 +170,7 @@ measured:
   evidence_from: >
     Not yet measured. The P002 trace analysis above motivates it but does not
     test it. Do NOT submit this on the strength of the hypothesis: per
-    HANDOFF.md step 5, submissions are held until a local run clears the ship
+    the project's working notes, step 5, submissions are held until a local run clears the ship
     rule in stats.py -- and per step 3 the rig must first be shown to resolve
     anything at all (run `resolve60`, launched 2026-10-12).
 
@@ -218,11 +218,11 @@ risks:
     the coder's own re-issue rate rises to absorb the freed budget, the bundle
     has moved the problem and should be retired rather than tuned.
   - >
-    THE PRIMARY RISK: this deletes the project's planned paper centrepiece. PLAN.md
+    THE PRIMARY RISK: this deletes the project's planned paper centrepiece. the project plan
     E6 bets on an orchestrator + specialist topology, and this bundle goes the
     opposite way, to a single flat agent. If it wins, E6 is dead and the paper's
     architecture section goes with it. That is an acceptable outcome -- the paper
-    chosen this session is about measurement, not architecture (paper/OUTLINE.md
+    chosen this session is about measurement, not architecture (the paper outline
     section 7) -- but it should be a decision, not a surprise.
   - >
     The expected direction is unknown, so this bundle can lose outright. It must

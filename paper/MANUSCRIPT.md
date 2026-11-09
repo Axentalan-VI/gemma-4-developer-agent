@@ -1,99 +1,13 @@
 # Calibrate the Yardstick First: Measurement Discipline for Agentic SWE Benchmarks
 
-**Status:** all eight sections drafted, trimmed under the cap, and fact-checked
-against primary sources. Started 2026-10-13; trimmed and corrected **2026-10-27**.
-**SUBMITTED 2026-10-28** as a Kaggle Writeup on the paper track, with the
-card, both figures and a public project link. Edits remain open until the
-deadline, **2026-11-12 23:59 UTC**.
+The text below the rule is the writeup as submitted to the Kaggle Gemma 4
+Developer Agent Paper Track on 2026-10-28. `python scripts/export_paper.py`
+regenerates it into `paper/SUBMISSION.md` and reports the body's length against
+the official 3,000-word cap on three counting bases, since the rubric states the
+cap without defining how words are counted.
 
-**Rule for this file:** nothing enters the body that is not in the outline's §3
-evidence map, and every external number carries the date it was verified.
+This preamble is not part of the submission and is excluded from every count.
 
-**Two numbers in the body track the repo and go stale silently:** the suite size
-(§D3 and §H, currently **301 passed, 3 skipped** in the published repository,
-292 of them without the competition's task file) and the three word counts above.
-Both are asserted by `tests/test_export_paper.py` or re-derived by
-`scripts/export_paper.py`; re-run both before submitting.
-
-### Length, against the official 3,000-word cap
-
-| counting basis | body |
-|---|---|
-| alphanumeric tokens (prose words) | **2,922** |
-| naive whitespace split of the markdown (scores `\|` and `=` as words) | **2,981** |
-| as rendered, without table pipes and heading marks | **2,947** |
-
-The rubric says only "3,000 words maximum" and does not define the count, so the
-paper is under the cap on every basis we could construct. Em-dashes are set
-closed, Chicago style, so a naive counter does not score them as separate words.
-This header is not part of the submission and is excluded from all three
-figures. All three are re-derivable: `python scripts/export_paper.py`, which
-also writes `paper/SUBMISSION.md`, the exact text to paste into the Writeup.
-
-### The 2026-10-27 accuracy pass
-
-Every quantitative claim was audited against the repo's primary sources — the
-ledger rows, `src/swegemma_lab/stats.py`, the bundle MANIFESTs and the committed
-leaderboard snapshots — and re-derived where it could be recomputed. Ten
-corrections resulted, each verified before it was applied:
-
-- **3,199 teams are *scored*; only 3,043 score positively.** The snapshot
-  histogram carries 156 teams at 0.00. The paper said "3,199 hold a positive
-  score" in §B and used 3,199 for the positive positions in §D0. The 1,094 / 34%
-  band is unaffected: it is a share of the whole scored field.
-- **§E claimed a pre-registered falsifier fired. It did not.** `v08`'s registered
-  falsifier (`bundles/v08_decode_clamp/MANIFEST.yaml`) was *`gold_hit` falling by
-  more than the timeout rate improved*. `gold_hit` **rose, 18 → 24**, which is the
-  favourable branch; `gold_exact` appears nowhere in the pre-registration. §E now
-  reports the registered branch as passed and the two unregistered readings that
-  went the other way. This was the worst error in the draft: a measurement-
-  discipline paper misreporting its own pre-registration.
-- **McNemar 0.3125 → 0.625.** 0.3125 is the one-sided tail; `mcnemar_exact(3,1)`
-  returns **0.625**, and every other p-value in the paper is two-sided. The wrong
-  figure is repo-wide (a `stats.py` comment, `LESSONS.md`, `OUTLINE.md` and two
-  test docstrings still carry it) — fix those next.
-- **Two runs had been conflated.** The 76% mismatch rate is P009's `cap60_v00`
-  (26/34); the byte-identical-to-gold pair is P008's, where the rate was 73%
-  (75/103). §G now attributes both.
-- **`SE_UNIT` = 0.030 was never measured on a 129-task run.** The largest task
-  list ever executed is 60. It is rescaled by 1/√n from a 12-task replication whose
-  two byte-identical runs differed by SD 0.118. §D4 now states that provenance
-  instead of asserting a measured 129-task SE, and §G no longer contradicts it.
-- **Five of the six components are GPU-free, not four.** §D and the abstract said
-  four while §H said five; only D2 needs an accelerator.
-- **p ≈ 0.15 is the grader's rate, not ours.** Local resolution runs far lower
-  (1/36, 2/60, 3/60). §C and §D2 now distinguish them, which the paper's own rule
-  against conflating grader and local harness demands.
-- **The headline paired comparison is 36 fastapi tasks only.** `clean_dev36.txt`
-  is 36/36 `fastapi/fastapi`. Now disclosed in §F's honest-limit paragraph.
-- **The mismatch rate is not re-derivable from this repo.** `ledger/runs/clamp_*`
-  and `cap60_*` carry `runspec.json` and `task_results.jsonl` only — no `patches/`
-  and no test logs, unlike `analyzer_*`. §H no longer claims every figure is
-  re-derivable. (`HANDOFF.md` §4 still overstates this and needs the same fix.)
-- **Four smaller ones.** v01's eleven items are not all prompt edits; v04 landed
-  *between* the arms, not "exactly between" (6 tasks against 8 and 5); §G's "~0.24"
-  is now **0.209**, the figure `detectable_delta` actually returns at n = 12, k = 1;
-  and §D1 no longer says the run that produced the diagnosis "bought nothing" — the
-  second identical run is precisely the one that captured the test output.
-
-Cross-section duplication removed in the same pass: the third-party score triple
-(the caveat survives in §G), and the "floor moved underneath us" finding, which was
-told at full length in §E, §F and §G and now lives in §G with cross-references.
-
-**Verification note, 2026-10-21.** §B and §D both report the **2026-10-19**
-committed snapshot (3,199 teams), not the 2026-10-13 one the outline was written
-against. D0's derivation was re-run on the newer board and is unchanged: a unique
-truncating fit at **n = 58**, **no** exact rounding fit in 20..220, nearest
-rounding containments at n = 93 (8 empty interior positions) and n = 98-100 (10).
-§B's central figure is recomputed, not carried over: the one-task band is
-**1,094 of 3,199 = 34%**. Do not reuse the outline's "1,012 of 2,643 = 38%" — its
-own components sum to 1,026, so that line carries an arithmetic slip as well as a
-stale snapshot.
-
-**The rubric is official as of 2026-10-27** (`paper/OUTLINE.md` §10, read
-first-party in a browser): 3,000 words maximum; five criteria each 0–5 —
-**Novelty, Quality, Relevance, Verifiability, Clarity** — final score the average
-of all five; top three win; the rubric is never shared.
 ---
 
 ## Abstract

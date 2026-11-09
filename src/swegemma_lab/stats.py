@@ -278,7 +278,7 @@ class ShipDecision:
 SE_UNIT = 0.030
 
 
-#: The smallest delta this project designs experiments to move (PLAN.md: "we can
+#: The smallest delta this project designs experiments to move (the project plan: "we can
 #: resolve +/-0.05, so every experiment must be designed to move ~0.05"). Below
 #: this, a null result means "not measured" rather than "no effect".
 PLAUSIBLE_EFFECT = 0.05

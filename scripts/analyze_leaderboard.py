@@ -32,7 +32,7 @@ from swegemma_lab.leaderboard import (  # noqa: E402
 )
 
 DEFAULT = ROOT / "data" / "leaderboard" / "public_lb_2026-10-19.json"
-EVIDENCE_THRESHOLD = 0.06  # the project's own rule; see CLAUDE.md
+EVIDENCE_THRESHOLD = 0.06  # the project's own rule; see the project brief
 
 
 def main() -> int:

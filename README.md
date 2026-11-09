@@ -120,7 +120,7 @@ you win the surrogate.
 src/swegemma_lab/  leaderboard.py (D0), stats.py (D3, D4), metrics.py (D2),
                    validate.py, build.py, tasks.py
 scripts/           CLI entry points
-tests/             320 tests; conftest.py skips the 9 that need the task file
+tests/             301 tests; conftest.py skips the 9 that need the task file
 bundles/           authored agent configurations; each MANIFEST.yaml is a D5
                    pre-registration written before its run
 ledger/runs/       one row per task per run, keyed by bundle_hash
@@ -129,7 +129,6 @@ paper/             the manuscript, the generated submission text, the figures
 kernels/           the two Kaggle notebooks behind cited results: the D1
                    calibration (CPU-only) and the headline paired run
 EXPERIMENTS.md     per-run record, including the runs that failed
-LESSONS.md         mistakes and their root causes
 ```
 
 ## Licence and citation
